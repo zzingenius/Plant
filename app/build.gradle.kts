@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -57,4 +58,24 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    //파이어베이스 버전 관리자 bom
+    implementation (platform("com.google.firebase:firebase-bom:34.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
+    //파이어베이스 인증(이메일/구글)
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+
+//구글 로그인 최신 버전 후순위 개발로 미뤄둘 것
+//    implementation("androidx.credentials:credentials:1.3.0")
+//    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+//    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    ///파이어스토어
+    implementation("com.google.firebase:firebase-firestore")
+    //realtime-database
+    implementation("com.google.firebase:firebase-database")
+    //fcm
+    implementation("com.google.firebase:firebase-messaging")
+
 }

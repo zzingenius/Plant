@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+# 파이어베이스
+app/google-services.json
