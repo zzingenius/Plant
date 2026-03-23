@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
  시스템 스플래시 활용
  여기서 자동로그인 여부 판별해서 홈 또는 사인 인 스크린으로 이동
 
+
+
  */
 
 class SplashViewModel : ViewModel(){
