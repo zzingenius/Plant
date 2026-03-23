@@ -25,6 +25,7 @@ import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeViewModel = viewModel()
     val userName by viewModel.userName.collectAsState()
+    val currentDate by viewModel.currentDate.collectAsState() // 추가된 날짜 상태
     val currentPot by viewModel.currentPot.collectAsState()
 
     Scaffold(
