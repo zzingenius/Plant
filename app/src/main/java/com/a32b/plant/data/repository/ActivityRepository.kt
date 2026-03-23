@@ -1,4 +1,6 @@
 package com.a32b.plant.data.repository
 
-class ActivityRepository {
+import com.google.firebase.firestore.FirebaseFirestore
+
+class ActivityRepository(private val db: FirebaseFirestore) {
 }

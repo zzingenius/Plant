@@ -19,6 +19,7 @@ import com.a32b.plant.core.component.BottomBar
 import com.a32b.plant.core.navigation.PlantAppNavigation
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.ui.feature.splash.SplashViewModel
+import com.a32b.plant.ui.theme.PlantTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: SplashViewModel by viewModels()
@@ -34,24 +35,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val navController = rememberNavController()
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            PlantTheme {
+                val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
 
-            val showBottomBar = navBackStackEntry?.destination?.let { destination ->
-                destination.hasRoute<Routes.HomeMain>() ||
-                destination.hasRoute<Routes.CommunityList>() ||
-                destination.hasRoute<Routes.Mypage>()
-            } ?: false
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                bottomBar = {
-                    if (showBottomBar) BottomBar(navController = navController)
-                }
-            ) {innerPadding ->
-                Box(modifier = Modifier.padding(innerPadding)){
-                    PlantAppNavigation(navController = navController, viewModel = viewModel)
+                val showBottomBar = navBackStackEntry?.destination?.let { destination ->
+                    destination.hasRoute<Routes.HomeMain>() ||
+                            destination.hasRoute<Routes.CommunityList>() ||
+                            destination.hasRoute<Routes.Mypage>()
+                } ?: false
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    bottomBar = {
+                        if (showBottomBar) BottomBar(navController = navController)
+                    }
+                ) {innerPadding ->
+                    Box(modifier = Modifier.padding(innerPadding)){
+                        PlantAppNavigation(navController = navController, viewModel = viewModel)
+                    }
                 }
             }
+
         }
     }
 }

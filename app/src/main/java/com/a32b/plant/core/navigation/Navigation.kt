@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.a32b.plant.ui.feature.auth.ui.SignInScreen
 import com.a32b.plant.ui.feature.auth.ui.SignUpScreen
 import com.a32b.plant.ui.feature.community.ui.CommunityListScreen
+import com.a32b.plant.ui.feature.community.ui.CommunityPostScreen
 import com.a32b.plant.ui.feature.home.ui.HomeScreen
 import com.a32b.plant.ui.feature.mypage.ui.MypageScreen
 import com.a32b.plant.ui.feature.splash.SplashViewModel
@@ -23,6 +24,7 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
             composable<Routes.HomeMain> { HomeScreen(navController) }
             composable<Routes.Mypage> { MypageScreen(navController) }
             composable<Routes.CommunityList> { CommunityListScreen(navController) }
+            composable<Routes.CommunityPost> { CommunityPostScreen(navController) }
             composable<Routes.Studying> { StudyingScreen(navController) }
             composable<Routes.SignIn> { SignInScreen(navController) }
             composable<Routes.SignUp> { SignUpScreen(navController) }

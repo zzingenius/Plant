@@ -33,7 +33,7 @@ fun BottomBar(navController: NavController){
     Surface(modifier = Modifier
         .fillMaxWidth()
         .height(68.dp),
-        shape = RoundedCornerShape(15.dp),
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         color = sub1) {
         Row(modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceEvenly,

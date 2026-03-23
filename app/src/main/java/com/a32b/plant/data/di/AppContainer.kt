@@ -13,9 +13,9 @@ object AppContainer {
     val firebaseAuth by lazy { FirebaseAuth.getInstance() }
     val firestore by lazy { FirebaseFirestore.getInstance() }
     val userRepository = UserRepository(firestore)
-    val potRepository = PotRepository()
-    val activityRepository = ActivityRepository()
-    val postRepository = PostRepository()
-    val nicknameRepository = NicknameRepository()
-    val studyingRepository = StudyingRepository()
+    val potRepository = PotRepository(firestore)
+    val activityRepository = ActivityRepository(firestore)
+    val postRepository = PostRepository(firestore)
+    val nicknameRepository = NicknameRepository(firestore)
+    val studyingRepository = StudyingRepository(firestore)
 }

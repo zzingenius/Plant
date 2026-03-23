@@ -1,4 +1,6 @@
 package com.a32b.plant.data.repository
 
-class NicknameRepository {
+import com.google.firebase.firestore.FirebaseFirestore
+
+class NicknameRepository(private val db: FirebaseFirestore) {
 }
