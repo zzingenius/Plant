@@ -19,14 +19,19 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.a32b.plant.core.navigation.Routes
+import com.a32b.plant.data.model.PotInfo
 import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 import com.a32b.plant.ui.theme.primary
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import coil.compose.AsyncImage // 추가 확인
+import com.a32b.plant.R // 본인 패키지명 R 확인
 
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeViewModel = viewModel()
     val userName by viewModel.userName.collectAsState()
-    val currentDate by viewModel.currentDate.collectAsState() // 추가된 날짜 상태
+    val currentDate by viewModel.currentDate.collectAsState() // 로컬 날짜 획득
     val currentPot by viewModel.currentPot.collectAsState()
 
     Scaffold(
@@ -50,23 +55,59 @@ fun HomeScreen(navController: NavController) {
             // [홈 1 영역] 상단 메인 카드
             item {
                 Spacer(modifier = Modifier.height(20.dp))
-                Text("2026년 3월 18일 09:00", fontSize = 14.sp)
+                Text(currentDate,
+                    fontSize = 16.sp,
+                    color = Color.DarkGray,
+                    fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(20.dp))
 
                 // 메인 카드 컴포넌트
-                MainPlantCard(
-                    tag = currentPot.tag,
-                    title = currentPot.name,
-                    onStartClick = {
-                        navController.navigate(Routes.Studying(currentPot.id, currentPot.tag, currentPot.name))
-                    },
-                    enabled = currentPot.id.isNotEmpty()
-                )
+                @Composable
+                fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit ) {
+                    Card( /* 스타일 설정 동일 */ ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = displayPot.tag)
+                            Text(text = displayPot.name, fontWeight = FontWeight.Bold)
 
-                Spacer(modifier = Modifier.height(24.dp))
-                Text("아래로 내려 나만의 화분 확인하기", color = Color.Gray, fontSize = 12.sp)
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
-                Spacer(modifier = Modifier.height(30.dp))
+                            // [이미지 분기 처리]
+                            Box(modifier = Modifier.size(150.dp)) {
+                                if (displayPot.id.isEmpty()) {
+                                    // 화분이 없는 경우: logo_plant 표시
+                                    Image(
+                                        painter = painterResource(id = R.drawable.logo_plant),
+                                        contentDescription = null
+                                    )
+                                } else {
+                                    // 마지막 공부 화분 이미지 표시 (Coil 등 사용)
+                                    AsyncImage(
+                                        model = displayPot.imageUrl,
+                                        contentDescription = null,
+                                        // 이미지 로딩 실패 시에도 logo_plant를 보여주도록 설정 가능
+                                        error = painterResource(id = R.drawable.logo_plant)
+                                    )
+                                }
+                            }
+
+                            // [공부 시간 표시] 자정 기점 오늘 공부한 총 시간 (Long)
+                            // 화분이 없으면 0으로 표시됨 (PotInfo 초기값)
+                            Text(
+                                text = String.format("%02d:%02d:%02d",
+                                    displayPot.todayStudyingTime / 3600,
+                                    (displayPot.todayStudyingTime % 3600) / 60,
+                                    displayPot.todayStudyingTime % 60),
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+
+                            // 단순 숫자(Long)만 보여주고 싶다면:
+                            // Text(text = "${displayPot.todayStudyingTime}")
+
+                            Button(onClick = onStartClick, enabled = displayPot.id.isNotEmpty()) {
+                                Text("공부 시작")
+                            }
+                        }
+                    }
+                }
             }
 
             // [홈 2 영역] 하단 그리드 (예시 데이터 사용, 필요시 mypage 컬렉션 연결)

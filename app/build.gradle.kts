@@ -90,4 +90,6 @@ dependencies {
     // 아이콘 visibility (실험중)
     implementation("androidx.compose.material:material-icons-extended")
 
+    //coil, AsyniImage
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }

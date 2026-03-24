@@ -33,8 +33,11 @@ class HomeViewModel : ViewModel() {
     private val _currentDate = MutableStateFlow("")
     val currentDate = _currentDate.asStateFlow()
 
+    private val _displayPot = MutableStateFlow(PotInfo())
+    val displayPot = _displayPot.asStateFlow()
+
     init {
-        updateCurrentDate()
+        _currentDate.value = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 M월 d일"))
         observeUserProfile()
     }
     private fun updateCurrentDate() {
@@ -47,7 +50,19 @@ class HomeViewModel : ViewModel() {
             userRepository.getUserProfile(currentUid).collectLatest { profile ->
                 profile?.let {
                     _userName.value = it.nickname
-                    _currentPot.value = it.currentPot
+                    _displayPot.value = when {
+                        //case 1 : 화분이 아예 없는 경우
+                        it.pots.isEmpty() -> PotInfo(id = "", name = "화분을 추가해주세요", todayStudyingTime = 0L)
+
+                        //case 2 : 화분이 하나만 있는 경우
+                        it.pots.size == 1 -> it.pots[0]
+
+                        //case 3: 화분이 2개 이상인 경우
+                        else -> {
+                            val lastPot = pots.find { it.id == user.lastSelectedPotId }
+                            lastPot ?: pots[0]
+                        }
+                    }
                 }
             }
         }
