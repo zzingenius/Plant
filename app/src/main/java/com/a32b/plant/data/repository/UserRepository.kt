@@ -1,5 +1,6 @@
 package com.a32b.plant.data.repository
 
+import com.a32b.plant.data.model.PotInfo
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.a32b.plant.data.model.UserProfile
