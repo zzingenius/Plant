@@ -1,5 +1,6 @@
 package com.a32b.plant.ui.feature.studying.ui
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -18,9 +19,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.toRoute
@@ -38,6 +43,7 @@ import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.data.model.StudyingUser
 import com.a32b.plant.ui.feature.studying.viewmodel.StudyingViewModel
+import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.background
 import com.a32b.plant.ui.theme.primary
 import com.a32b.plant.ui.theme.sub1
@@ -54,16 +60,23 @@ fun StudyingScreen(navController: NavController) {
     val args = navController.currentBackStackEntry?.toRoute<Routes.Studying>()
 
     val tag = args!!.tag
-    val title = args!!.title
-    val potId = args!!.potId
+    val title = args.title
+    val potId = args.potId
+    Log.d("tag", tag)
 
-    val now = LocalDateTime.now()
-    val startTime = TimeFormatter.formatToTimeOnly(now)
+    LaunchedEffect(Unit) {
+        viewModel.setTag(tag)
+        viewModel.fetchStudyingUsers()
+    }
 
-    var studyingUsers = mutableListOf<StudyingUser>()
-    studyingUsers.add(StudyingUser("0", "닉네임", "lv.0", "자격증", 300000))
-    studyingUsers.add(StudyingUser("0", "닉네임1", "lv.1", "자격증", 30000))
-    studyingUsers.add(StudyingUser("0", "닉네임2", "lv.5", "자격증", 1000000))
+    val startTime = remember {
+        val now = LocalDateTime.now()
+        TimeFormatter.formatToTimeOnly(now) }
+
+    val studyingUsers = viewModel.studyingUsers
+//    studyingUsers.add(StudyingUser("0", "닉네임", "lv.0", "자격증", 300000))
+//    studyingUsers.add(StudyingUser("0", "닉네임1", "lv.1", "자격증", 30000))
+//    studyingUsers.add(StudyingUser("0", "닉네임2", "lv.5", "자격증", 1000000))
     Surface(modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF8F6F6)
     ) {
@@ -76,18 +89,20 @@ fun StudyingScreen(navController: NavController) {
             StudyStatusBadge(tag, title)
 
             Spacer(modifier = Modifier.height(70.dp))
-            Text("$startTime ~")
-            SetTimer(100)
+            Text("$startTime ~", style = Typography.bodyMedium, fontSize = 13.sp)
+            SetTimer(viewModel.timeMillis)
 
             Spacer(modifier = Modifier.height(30.dp))
             Row {
                 //일시정지/학습시작 버튼
                 Button(viewModel.buttonText, viewModel.buttonBack){ viewModel.toggleStudyStatus()}
-                Button("학습종료", sub1) { Toast.makeText(context, "학습 종료 버튼 ", Toast.LENGTH_SHORT).show() }
+                Button("학습종료", sub1) {
+                    viewModel.stopStopwatch()
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
 
-            StudyingUserCard(studyingUsers)
+            StudyingUserCard(studyingUsers, tag)
         }
     }
 }
@@ -102,6 +117,7 @@ fun StudyStatusBadge(tag: String, title: String){
         Text(
             text = "[$tag] $title 공부중",
             color = primary,
+            style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
     }
 }
@@ -117,7 +133,7 @@ fun SetTimer(time: Long){
             modifier = Modifier.matchParentSize(),
             contentScale = ContentScale.Fit
         )
-        Text(text = "$time")
+        Text(text = "${TimeFormatter.formatToDigitalClock(time)}", style = MaterialTheme.typography.titleLarge)
     }
 }
 @Composable
@@ -133,20 +149,20 @@ fun Button(text: String, backColor: Color, function: () -> Unit){
     ) {
         Box(modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center){
-            Text("$text")
+            Text("$text", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
 @Composable
-fun StudyingUserCard(users: List<StudyingUser>){
+fun StudyingUserCard(users: List<StudyingUser>, tag: String){
     Card(
         modifier = Modifier.fillMaxWidth().height(200.dp),
         shape = RoundedCornerShape(topStart = 5.dp, topEnd = 5.dp, bottomEnd = 0.dp),
-        colors = CardDefaults.cardColors(containerColor = background)
+        colors = CardDefaults.cardColors(containerColor = background),
         ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text("자격증 5")
+            Text("$tag 5", style = MaterialTheme.typography.titleSmall)
             users.forEach { user ->
                 StudyinUserItem(user)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -160,7 +176,7 @@ fun StudyinUserItem(user: StudyingUser){
     Row(Modifier.padding(10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         ProfileImage(user.profileImg, 30)
-        Text(text = user.nickname)
-        Text(text = " ${TimeFormatter.formatToMinute(user.studyingTime)} 째 공부중!")
+        Text(text = user.nickname, style = MaterialTheme.typography.bodyMedium)
+        Text(text = " ${TimeFormatter.formatToMinute(user.studyingTime)} 째 공부중!", style = MaterialTheme.typography.bodyMedium)
     }
 }
