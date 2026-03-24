@@ -96,8 +96,8 @@ fun HomeScreen(navController: NavController) {
                             pot = pot,
                             modifier = Modifier.weight(1f),
                             onItemClick = {
-                                // 클릭 시 해당 화분을 메인(displayPot)으로 설정하는 로직 등
-                            }
+                                //클릭 시 ViewModel -> selectPot 함수 호출
+                                viewModel.selectPot(pot)                            }
                         )
                     }
                     //빈 칸 채우기 로직 (rowPots.size가 3보다 작을 때)
