@@ -33,6 +33,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.toRoute
@@ -42,6 +43,7 @@ import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.data.model.StudyingUser
 import com.a32b.plant.ui.feature.studying.viewmodel.StudyingViewModel
+import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.background
 import com.a32b.plant.ui.theme.primary
 import com.a32b.plant.ui.theme.sub1
@@ -62,7 +64,10 @@ fun StudyingScreen(navController: NavController) {
     val potId = args.potId
     Log.d("tag", tag)
 
-    LaunchedEffect(Unit) { viewModel.fetchStudyingUsers(tag) }
+    LaunchedEffect(Unit) {
+        viewModel.setTag(tag)
+        viewModel.fetchStudyingUsers()
+    }
 
     val startTime = remember {
         val now = LocalDateTime.now()
@@ -84,14 +89,16 @@ fun StudyingScreen(navController: NavController) {
             StudyStatusBadge(tag, title)
 
             Spacer(modifier = Modifier.height(70.dp))
-            Text("$startTime ~")
+            Text("$startTime ~", style = Typography.bodyMedium, fontSize = 13.sp)
             SetTimer(viewModel.timeMillis)
 
             Spacer(modifier = Modifier.height(30.dp))
             Row {
                 //일시정지/학습시작 버튼
                 Button(viewModel.buttonText, viewModel.buttonBack){ viewModel.toggleStudyStatus()}
-                Button("학습종료", sub1) { Toast.makeText(context, "학습 종료 버튼 ", Toast.LENGTH_SHORT).show() }
+                Button("학습종료", sub1) {
+                    viewModel.stopStopwatch()
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
 
