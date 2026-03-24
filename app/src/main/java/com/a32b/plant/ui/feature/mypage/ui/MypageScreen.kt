@@ -238,7 +238,7 @@ fun ProfileDialog(onDismiss: () -> Unit, userName: String, viewModel: MyPageView
                     },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("저장")
+                    Text("저장0")
                 }
             }
         }
