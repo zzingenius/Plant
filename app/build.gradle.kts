@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -90,4 +91,6 @@ dependencies {
     // 아이콘 visibility (실험중)
     implementation("androidx.compose.material:material-icons-extended")
 
+    //coil, AsyniImage
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }
