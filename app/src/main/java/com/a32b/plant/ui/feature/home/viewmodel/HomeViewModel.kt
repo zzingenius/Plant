@@ -5,13 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.a32b.plant.data.di.AppContainer
 import com.a32b.plant.data.model.PotInfo
 import com.a32b.plant.data.model.UserProfile
+import com.a32b.plant.core.util.TimeFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
+import java.time.LocalDateTime
 class HomeViewModel : ViewModel() {
     private val userRepository = AppContainer.userRepository
 
@@ -27,29 +27,28 @@ class HomeViewModel : ViewModel() {
     private val currentUid = "test_user_uid"
     private val _userName = MutableStateFlow("사용자")
     val userName = _userName.asStateFlow()
-
-    private val _currentPot = MutableStateFlow(PotInfo())
-    val currentPot = _currentPot.asStateFlow()
     private val _currentDate = MutableStateFlow("")
     val currentDate = _currentDate.asStateFlow()
 
     private val _displayPot = MutableStateFlow(PotInfo())
     val displayPot = _displayPot.asStateFlow()
 
+    private val _potList = MutableStateFlow<List<PotInfo>>(emptyList())
+    val potList = _potList.asStateFlow()
+
     init {
-        _currentDate.value = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy년 M월 d일"))
+        updateCurrentDate()
         observeUserProfile()
     }
     private fun updateCurrentDate() {
-        val current = LocalDate.now() // 시간 제외, 날짜만 가져옴
-        val formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일")
-        _currentDate.value = current.format(formatter)
-    }
+        val current = LocalDateTime.now()
+        _currentDate.value = TimeFormatter.formatToKoreanDate(current)    }
     private fun observeUserProfile() {
         viewModelScope.launch {
             userRepository.getUserProfile(currentUid).collectLatest { profile ->
                 profile?.let { user ->
                     _userName.value = user.nickname
+                    _potList.value = user.potList
 
                     val pots = user.potList
                     _displayPot.value = when {

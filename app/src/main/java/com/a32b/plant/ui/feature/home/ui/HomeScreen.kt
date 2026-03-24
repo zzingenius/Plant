@@ -1,6 +1,7 @@
 package com.a32b.plant.ui.feature.home.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,25 +15,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.data.model.PotInfo
+import com.a32b.plant.core.component.ProfileImage
 import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 import com.a32b.plant.ui.theme.primary
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
-import coil.compose.AsyncImage // 추가 확인
-import com.a32b.plant.R // 본인 패키지명 R 확인
+import com.a32b.plant.core.util.TimeFormatter
 
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeViewModel = viewModel()
     val userName by viewModel.userName.collectAsState()
     val currentDate by viewModel.currentDate.collectAsState() // 로컬 날짜 획득
-    val currentPot by viewModel.currentPot.collectAsState()
+    val displayPot by viewModel.displayPot.collectAsState()
+    val potList by viewModel.potList.collectAsState()
 
     Scaffold(
         topBar = {
@@ -61,86 +62,73 @@ fun HomeScreen(navController: NavController) {
                     fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 메인 카드 컴포넌트
-                @Composable
-                fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit ) {
-                    Card( /* 스타일 설정 동일 */ ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = displayPot.tag)
-                            Text(text = displayPot.name, fontWeight = FontWeight.Bold)
-
-                            // [이미지 분기 처리]
-                            Box(modifier = Modifier.size(150.dp)) {
-                                if (displayPot.id.isEmpty()) {
-                                    // 화분이 없는 경우: logo_plant 표시
-                                    Image(
-                                        painter = painterResource(id = R.drawable.logo_plant),
-                                        contentDescription = null
-                                    )
-                                } else {
-                                    // 마지막 공부 화분 이미지 표시 (Coil 등 사용)
-                                    AsyncImage(
-                                        model = displayPot.imageUrl,
-                                        contentDescription = null,
-                                        // 이미지 로딩 실패 시에도 logo_plant를 보여주도록 설정 가능
-                                        error = painterResource(id = R.drawable.logo_plant)
-                                    )
-                                }
-                            }
-
-                            // [공부 시간 표시] 자정 기점 오늘 공부한 총 시간 (Long)
-                            // 화분이 없으면 0으로 표시됨 (PotInfo 초기값)
-                            Text(
-                                text = String.format("%02d:%02d:%02d",
-                                    displayPot.todayStudyingTime / 3600,
-                                    (displayPot.todayStudyingTime % 3600) / 60,
-                                    displayPot.todayStudyingTime % 60),
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.ExtraBold
+                // 메인 카드
+                MainPlantCard(
+                    displayPot = displayPot,
+                    onStartClick = {
+                        // 화분이 있을 때만 공부 페이지로 이동
+                        if (displayPot.id.isNotEmpty()) {
+                            navController.navigate(
+                                Routes.Studying(displayPot.id, displayPot.tag, displayPot.name)
                             )
-
-                            // 단순 숫자(Long)만 보여주고 싶다면:
-                            // Text(text = "${displayPot.todayStudyingTime}")
-
-                            Button(onClick = onStartClick, enabled = displayPot.id.isNotEmpty()) {
-                                Text("공부 시작")
-                            }
                         }
                     }
-                }
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("아래로 내려 나만의 화분 확인하기", color = Color.Gray, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
+                Spacer(modifier = Modifier.height(30.dp))
             }
 
             // [홈 2 영역] 하단 그리드 (예시 데이터 사용, 필요시 mypage 컬렉션 연결)
-            // 임시로 같은 데이터를 리스트로 뿌리는 예시입니다.
-            val dummyList = List(6) { currentPot }
-            val rows = dummyList.chunked(3)
+            val chunkedPots = potList.chunked(3)
 
-            items(rows) { rowItems ->
+            items(chunkedPots) { rowPots ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    rowItems.forEach { item ->
-                        // 작은 화분 아이템 (따로 정의 필요)
-                        Box(modifier = Modifier.weight(1f).aspectRatio(1f).background(Color.White, RoundedCornerShape(12.dp)))
+                    // 실제 데이터가 있는 화분들 표시
+                    rowPots.forEach { pot ->
+                        GridPlantItem(
+                            pot = pot,
+                            modifier = Modifier.weight(1f),
+                            onItemClick = {
+                                // 클릭 시 해당 화분을 메인(displayPot)으로 설정하는 로직 등
+                            }
+                        )
+                    }
+                    //빈 칸 채우기 로직 (rowPots.size가 3보다 작을 때)
+                    val emptySlots = 3 - rowPots.size
+                    repeat(emptySlots) {
+                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
             }
-
-            // 추가 버튼
+            // [추가 버튼 영역]
             item {
-                IconButton(onClick = { /* 추가 로직 */ }) {
-                    Icon(Icons.Default.AddCircle, contentDescription = null, modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(30.dp))
+                IconButton(
+                    onClick = { /* 화분 추가 페이지로 이동 */ },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = "화분 추가",
+                        modifier = Modifier.fillMaxSize(),
+                        tint = Color(0xFFA5C16C)
+                    )
                 }
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
     }
 }
 
 @Composable
-fun MainPlantCard(tag: String, title: String, onStartClick: () -> Unit, enabled: Boolean) {
+fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(0.85f),
         shape = RoundedCornerShape(24.dp),
@@ -151,20 +139,109 @@ fun MainPlantCard(tag: String, title: String, onStartClick: () -> Unit, enabled:
             modifier = Modifier.padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Surface(color = Color(0xFFE8F5E9), shape = RoundedCornerShape(8.dp)) {
-                Text(text = tag, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), color = Color(0xFF4CAF50), fontSize = 12.sp)
+            //화분이 있을 때만 태그 표시 (ID가 비어있지 않을 때)
+            if (displayPot.id.isNotEmpty() && displayPot.tag.isNotEmpty()) {
+                Surface(
+                    color = Color(0xFFE8F5E9),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = displayPot.tag,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        color = Color(0xFF4CAF50),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
-            Text(text = title, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(100.dp)) // 이미지 들어갈 자리
 
+            // 화분이 없으면 안내 문구 - Bold 적용
+            Text(
+                text = if (displayPot.id.isEmpty()) "화분을 등록해보세요" else displayPot.name,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // [이미지 영역] 화분 유무에 따른 분기
+            ProfileImage(
+                level = displayPot.level,
+                size = 150
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // [공부 시간] 화분이 없으면 00:00:00
+            Text(
+                text = TimeFormatter.formatToDigitalClock(displayPot.todayStudyingTime),                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.DarkGray
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // [버튼] 화분이 없을 때는 비활성화 처리
             Button(
                 onClick = onStartClick,
-                enabled = enabled,
+                enabled = displayPot.id.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFA5C16C))
             ) {
-                Text("공부 시작")
+                Text(if (displayPot.id.isEmpty()) "화분 없음" else "공부 시작",
+                    fontWeight = FontWeight.Bold)
             }
         }
+    }
+}
+@Composable
+fun GridPlantItem(
+    pot: PotInfo,
+    modifier: Modifier = Modifier,
+    onItemClick: () -> Unit
+) {
+    // 화분 ID가 비어있지 않을 때만 실제 내용을 표시
+    if (pot.id.isNotEmpty()) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(Color.White, RoundedCornerShape(16.dp))
+                .clickable { onItemClick() }
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 1. 화분 그림 (ProfileImage 재사용)
+            ProfileImage(
+                level = pot.level,
+                size = 60
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 2. 총 공부 시간 (TimeFormatter 사용, Medium 적용)
+            Text(
+                text = TimeFormatter.formatToDigitalClock(pot.todayStudyingTime),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF4CAF50) // 포인트 컬러
+            )
+
+            // 3. 화분 이름 (Medium 적용)
+            Text(
+                text = pot.name,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.DarkGray,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    } else {
+        // 화분이 없는 빈 칸은 투명한 공간으로 둠 (그리드 정렬 유지용)
+        Spacer(modifier = modifier.fillMaxWidth())
     }
 }
