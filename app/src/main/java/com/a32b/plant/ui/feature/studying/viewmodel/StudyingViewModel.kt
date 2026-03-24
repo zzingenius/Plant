@@ -21,11 +21,15 @@ import kotlinx.coroutines.launch
 class StudyingViewModel: ViewModel() {
     private val repository = AppContainer.studyingRepository
     private var isStudying by mutableStateOf(true)
+    private var tag = ""
+    fun setTag(tag: String) {
+        this.tag = tag
+    }
 
     /** db에서 같은 태그로 공부중인 사용자 데이터 가져오기 */
     var studyingUsers by mutableStateOf<List<StudyingUser>>(emptyList())
         private set
-    fun fetchStudyingUsers(tag: String){
+    fun fetchStudyingUsers(){
         viewModelScope.launch {
             studyingUsers = repository.getStudyingUser(tag)
             Log.d("뷰모델 유저", "공부중 : $studyingUsers")
@@ -53,6 +57,13 @@ class StudyingViewModel: ViewModel() {
             while (true){
                 delay(1000)
                 timeMillis +=1000
+                if(timeMillis % 600000L == 0L){
+                    repository.updateStudyingUser(
+                        StudyingUser("zz", "zz", "lv.2", tag, timeMillis)
+                    )
+
+                    fetchStudyingUsers()
+                }
             }
         }
     }
