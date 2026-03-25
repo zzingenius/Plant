@@ -21,7 +21,7 @@ class PotRepository(private val db: FirebaseFirestore) {
                 return@addSnapshotListener
             }
             //name 필드값 추출 -> 리스트화
-            val tags = snapshot?.documents?.mapNotNull { it.getString("name") }?: emptyList()
+            val tags = snapshot?.documents?.mapNotNull { it.id }?: emptyList()
 
             //data 전송
             trySend(tags)
