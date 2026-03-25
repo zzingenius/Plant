@@ -56,7 +56,9 @@ fun NewBornTreeScreen(navController: NavController,
     //실패
     LaunchedEffect(Unit) {
         viewModel.errorMessage.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            if (message.isNotEmpty()) {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            }
         }
     }
 
