@@ -86,7 +86,8 @@ class StudyingViewModel(
 
     fun onIsStudyFinishChange() = _uiState.update { it.copy(isStduyFinish = true) }
     fun onDialogCloseClick() {
-        onIsStudyFinishChange()
+
+        //디비로 사용자의 입력값 넘기고
         viewModelScope.launch {
             _eventChannel.send(StudyingEvent.NavigateToStudyResult)
         }
