@@ -1,34 +1,34 @@
 package com.a32b.plant.ui.feature.mypage.ui
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,11 +38,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -54,7 +54,6 @@ import com.a32b.plant.ui.theme.sub_green1
 import com.a32b.plant.R
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.ui.theme.primary
-import com.a32b.plant.ui.theme.sub1
 
 @Composable
 fun MypageScreen(navController: NavController) {
@@ -73,8 +72,6 @@ fun MypageScreen(navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
-
             ButtonTemplate(text = "기른 나무 수-모양 변경") { }
             DividerImage()
             ButtonTemplate(text = "커뮤니티 활동") { }
@@ -122,7 +119,7 @@ fun DarkModeToggleButton() {
 }
 
 @Composable
-fun GrownTreeCountButton(){
+fun GrownTreeCountButton() {
 // 임시로 정한 숫자 (나중엔 서버나 DB에서 가져오겠지?)
     val count = 5
     Button(
@@ -187,9 +184,10 @@ fun ProfileRow(userName: String, viewModel: MyPageViewModel) {
         // 03-24 공통 컴포넌트 가이드 참조 fun ProfileImage() 사용하기
         Box( // 프로필이미지
             modifier = Modifier
-                .size(80.dp)
+                .size(60.dp)
                 .background(Color.LightGray, shape = CircleShape)
                 .clickable {
+                    viewModel.getImageLevelList()
                     isOpenDialog = true
                 }
         ) {
@@ -234,61 +232,30 @@ fun DividerImage() {
     }
 }
 
-//@Composable
-//fun UpdateProfileButton(onClick: () -> Unit) {
-//    val context = LocalContext.current
-//    Button(onClick = {
-//        onClick()
-//        Toast.makeText(context, "업데이트 완료!", Toast.LENGTH_SHORT).show()
-//    })
-//    {
-//        Text("저장", style = Typography.bodySmall, color = fontColor)
-//    }
-//}
-
-
 // 프로필 편집 클릭 시 이미지 3개 띄우는 함수
 @Composable
-fun SetImages(selectedImageLevel: String, onImageClick: (String) -> Unit) {
-    Row() {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .border(
-                    width = if (selectedImageLevel == "lv.0") 3.dp else 0.dp,
-                    color = sub_green1
-                )
-                .clickable {
-                    onImageClick("lv.0")
-                }
-        ) {
-            ProfileImage("lv.0", 30)
-        }
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .border(
-                    width = if (selectedImageLevel == "lv.1") 3.dp else 0.dp,
-                    color = sub_green1
-                )
-                .clickable {
-                    onImageClick("lv.1")
-                }
-        ) {
-            ProfileImage("lv.1", 30)
-        }
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .border(
-                    width = if (selectedImageLevel == "lv.2") 3.dp else 0.dp,
-                    color = sub_green1
-                )
-                .clickable {
-                    onImageClick("lv.2")
-                }
-        ) {
-            ProfileImage("lv.2", 30)
+fun SetImages(levelList: List<String>, selectedImageLevel: String, onImageClick: (String) -> Unit) {
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        maxItemsInEachRow = 3
+    ) {
+        levelList.forEach { level ->
+            Box(
+                modifier = Modifier
+                    .size(60.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = if (selectedImageLevel == level) 3.dp else 0.dp,
+                        color = sub_green1,
+                        shape = CircleShape
+                    )
+                    .clickable { onImageClick(level) }
+            ){
+                ProfileImage(level, 60)
+            }
         }
     }
 }
@@ -300,6 +267,8 @@ fun ProfileDialog(onDismiss: () -> Unit, userName: String, viewModel: MyPageView
     var selectedImageLevel by remember { mutableStateOf("lv.1") }
     val context = LocalContext.current
     val isUpdateSuccess by viewModel.isUpdateSuccess.collectAsState()
+    val levelList by viewModel.levelList.collectAsState()
+
     LaunchedEffect(isUpdateSuccess) {
         if (isUpdateSuccess) {
             Toast.makeText(context, "업데이트 완료", Toast.LENGTH_SHORT).show()
@@ -308,56 +277,70 @@ fun ProfileDialog(onDismiss: () -> Unit, userName: String, viewModel: MyPageView
         }
     }
     Dialog(onDismissRequest = { onDismiss() }) {
-        Card(modifier = Modifier.fillMaxWidth()) {
-            TextField(
-//                state = usernameState,
-                //                ,lineLimits = TextFieldLineLimits.SingleLine,
-                value = newUserName,
-                onValueChange = { v ->
-                    if (v.length <= 10) newUserName = v
-                },
-                label = {
-                    Text(
-                        "0글자~10글자 특수문자 제외",
-                        style = Typography.bodySmall,
-                        color = fontColor
-                    )
-                },
-                placeholder = {
-                    Text(
-                        "변경하실 닉네임을 입력해주세요",
-                        style = Typography.bodySmall,
-                        color = fontColor
-                    )
-                }
-            )
-            SetImages(
-                selectedImageLevel = selectedImageLevel,
-                onImageClick = { clickedLevel -> selectedImageLevel = clickedLevel })
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(
-                    onClick = { onDismiss() },
-                    modifier = Modifier.weight(1f)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("취소", style = Typography.bodySmall, color = fontColor)
-                }
-                Button(
-                    onClick = {
-                        if (newUserName.length <= 2) {
-                            Toast.makeText(context, "닉네임 길이 3~10글자", Toast.LENGTH_SHORT).show()
-                        } else {
-                            viewModel.updateProfile(newUserName, selectedImageLevel)
+                    TextField(
+                        singleLine = true,
+                        value = newUserName,
+                        onValueChange = { v ->
+                            if (v.length <= 10) newUserName = v
+                        },
+                        label = {
+                            Text(
+                                "변경하실 닉네임을 입력해주세요 0글자~10글자 특수문자 제외",
+                                style = Typography.bodySmall,
+                                color = fontColor
+                            )
+                        },
+                        placeholder = {
+                            Text(
+                                "변경하실 닉네임을 입력해주세요",
+                                style = Typography.bodySmall,
+                                color = fontColor
+                            )
                         }
-                    },
-                    modifier = Modifier.weight(1f)
+                    )
+                    SetImages(
+                        levelList = levelList,
+                        selectedImageLevel = selectedImageLevel,
+                        onImageClick = { clickedLevel -> selectedImageLevel = clickedLevel })
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("저장", style = Typography.bodySmall, color = fontColor)
+                    Button(
+                        onClick = { onDismiss() },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("취소", style = Typography.bodySmall, color = fontColor)
+                    }
+                    Button(
+                        onClick = {
+                            if (newUserName.length <= 2) {
+                                Toast.makeText(context, "닉네임 길이 3~10글자", Toast.LENGTH_SHORT).show()
+                            } else {
+                                viewModel.updateProfile(newUserName, selectedImageLevel)
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("저장", style = Typography.bodySmall, color = fontColor)
+                    }
                 }
             }
         }
     }
 }
-
