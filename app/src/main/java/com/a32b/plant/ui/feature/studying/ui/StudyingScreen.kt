@@ -55,7 +55,6 @@ import java.time.LocalDateTime
 
 @Composable
 fun StudyingScreen(navController: NavController) {
-    val context = LocalContext.current
 
     //이전 스택에서 보낸 값을 args에 넣어서 뽑아낼 수 있음
     val args = navController.currentBackStackEntry?.toRoute<Routes.Studying>()
@@ -66,7 +65,7 @@ fun StudyingScreen(navController: NavController) {
     Log.d("tag", tag)
     //뷰모델 연결해주기
 
-    val viewModel : StudyingViewModel = viewModel(factory = ViewModelFactory.studyingViewModelFactory(tag))
+    val viewModel : StudyingViewModel = viewModel(factory = ViewModelFactory.studyingViewModelFactory(tag, potId))
 
     val uiState by viewModel.uiState.collectAsState()
     val timerButtonText = if (uiState.isStudying) "일시정지" else "학습하기"
@@ -74,6 +73,12 @@ fun StudyingScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         viewModel.onStudyingUsersChange()
+        viewModel.event.collect {
+            navController.navigate(Routes.StudyFinish){
+                popUpTo(Routes.HomeMain) { inclusive = false }
+            }
+
+        }
     }
 
     val startTime = remember {

@@ -1,16 +1,10 @@
 package com.a32b.plant.ui.feature.studying.viewmodel
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.a32b.plant.data.di.AppContainer
 import com.a32b.plant.data.model.StudyingUser
 import com.a32b.plant.data.repository.StudyingRepository
-import com.a32b.plant.ui.theme.primary
 import com.a32b.plant.ui.theme.sub2
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -29,13 +23,18 @@ data class StudyingUiState(
     val buttonBack: Color = sub2,
     val studyingUsers: List<StudyingUser> = emptyList(),
     val isDialogShown: Boolean = false,
-    val studyLog: List<String> = emptyList()
+    val studyLog: List<String> = emptyList(),
+    val isStduyFinish: Boolean = false
 )
 
 sealed class StudyingEvent{
     object NavigateToStudyResult: StudyingEvent()
 }
-class StudyingViewModel(private val repository: StudyingRepository, private val tag: String) : ViewModel() {
+class StudyingViewModel(
+    private val repository: StudyingRepository,
+    private val tag: String,
+    private val potId: String
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StudyingUiState(tag = tag))
     val uiState = _uiState.asStateFlow()
@@ -76,7 +75,6 @@ class StudyingViewModel(private val repository: StudyingRepository, private val 
             }
         }
     }
-
     fun stopStopwatch(){
         _uiState.update { it.copy(isStudying = false) }
         job?.cancel()
@@ -84,6 +82,14 @@ class StudyingViewModel(private val repository: StudyingRepository, private val 
 
     init {
         startStopwatch()
+    }
+
+    fun onIsStudyFinishChange() = _uiState.update { it.copy(isStduyFinish = true) }
+    fun onDialogCloseClick() {
+        onIsStudyFinishChange()
+        viewModelScope.launch {
+            _eventChannel.send(StudyingEvent.NavigateToStudyResult)
+        }
     }
 
 
