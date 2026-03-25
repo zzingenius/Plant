@@ -39,7 +39,7 @@ class StudyingViewModel(private val repository: StudyingRepository, private val 
 
     private val _uiState = MutableStateFlow(StudyingUiState(tag = tag))
     val uiState = _uiState.asStateFlow()
-
+    //
     private val _eventChannel = Channel<StudyingEvent>(Channel.BUFFERED)
     val event = _eventChannel.receiveAsFlow()
 
