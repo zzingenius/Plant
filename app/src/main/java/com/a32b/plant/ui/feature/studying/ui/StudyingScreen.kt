@@ -25,6 +25,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,19 +68,19 @@ fun StudyingScreen(navController: NavController) {
 
     val viewModel : StudyingViewModel = viewModel(factory = ViewModelFactory.studyingViewModelFactory(tag))
 
+    val uiState by viewModel.uiState.collectAsState()
+    val timerButtonText = if (uiState.isStudying) "일시정지" else "학습하기"
+    val timerButtonBack = if (uiState.isStudying) sub2 else primary
 
     LaunchedEffect(Unit) {
-        viewModel.fetchStudyingUsers()
+        viewModel.onStudyingUsersChange()
     }
 
     val startTime = remember {
         val now = LocalDateTime.now()
         TimeFormatter.formatToTimeOnly(now) }
 
-    val studyingUsers = viewModel.studyingUsers
-//    studyingUsers.add(StudyingUser("0", "닉네임", "lv.0", "자격증", 300000))
-//    studyingUsers.add(StudyingUser("0", "닉네임1", "lv.1", "자격증", 30000))
-//    studyingUsers.add(StudyingUser("0", "닉네임2", "lv.5", "자격증", 1000000))
+    val studyingUsers = uiState.studyingUsers
     Surface(modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF8F6F6)
     ) {
@@ -92,12 +94,12 @@ fun StudyingScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(70.dp))
             Text("$startTime ~", style = Typography.bodyMedium, fontSize = 13.sp)
-            SetTimer(viewModel.timeMillis)
+            SetTimer(viewModel.uiState.value.timer)
 
             Spacer(modifier = Modifier.height(30.dp))
             Row {
                 //일시정지/학습시작 버튼
-                Button(viewModel.buttonText, viewModel.buttonBack){ viewModel.toggleStudyStatus()}
+                Button(timerButtonText, timerButtonBack){ viewModel.onStudyingStatusChange()}
                 Button("학습종료", sub1) {
                     viewModel.stopStopwatch()
                 }
