@@ -5,12 +5,11 @@ data class PotInfo(
     val id: String = "",
     val tag: String = "",
     val name: String = "",
-    private val _level: String = "0",
     val imageUrl: String = "",
     val todayStudyingTime: Long = 0L,
     val pottotalStudyingTime: Long = 0L
 ){
-    //레벨 계산
+    //레벨 업 계산
     val level: String get(){
         val hours = pottotalStudyingTime / 3600
         val calculatedlevel =  when {
