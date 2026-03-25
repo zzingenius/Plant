@@ -7,7 +7,7 @@ import com.a32b.plant.ui.feature.community.ui.Post
 import com.a32b.plant.data.repository.PostRepository
 import kotlinx.coroutines.launch
 
-class CommunityPostViewModel(private val repository: PostRepository) : ViewModel() {
+class CommunityPostViewModel(private val repository: PostRepository, private val type: String?) : ViewModel() {
 
     // ✅ 화면에서 등록 버튼을 누르면 실행될 함수
     fun savePost(title: String, content: String, tag: String, onComplete: (Boolean) -> Unit) {
