@@ -1,102 +1,64 @@
 package com.a32b.plant.ui.feature.community.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.a32b.plant.core.navigation.Routes
+import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommunityPostScreen(navController: NavController) {
+fun CommunityPostScreen(
+    navController: NavController,
+    viewModel: CommunityPostViewModel // ✅ ViewModel 연결
+) {
     val context = LocalContext.current
 
-    // --- 상태 관리 (입력값들) ---
+    // 상태 관리 (입력값들)
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var selectedTag by remember { mutableStateOf("고등학생") }
-    val tags = listOf("중학생", "고등학생", "대학생", "자격증", "공유")
+    val tags = listOf("중학생", "고등학생", "취준", "자격증", "취미", "자랑", "공유")
 
     Scaffold(
-        containerColor = Color(0xFFFDFDF0), // 연한 아이보리 배경
+        containerColor = Color(0xFFFDFDF0),
         topBar = {
-            TopAppBar(
-                title = { Text("글쓰기", fontSize = 16.sp, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    // ✅ 사각형 라운드 뒤로가기 버튼
-                    Surface(
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .size(36.dp)
-                            .clickable { navController.popBackStack() },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, Color(0xFF9575CD))
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back",
-                                modifier = Modifier.size(18.dp),
-                                tint = Color(0xFF9575CD)
-                            )
+            PostTopBar(
+                onBackClick = { navController.popBackStack() },
+                onRegisterClick = {
+                    if (title.isBlank() || content.isBlank()) {
+                        Toast.makeText(context, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // 🚀 1. DB에 저장 시도
+                        viewModel.savePost(title, content, selectedTag) { isSuccess ->
+                            if (isSuccess) {
+                                Toast.makeText(context, "성공적으로 등록되었습니다!", Toast.LENGTH_SHORT).show()
+                                // 🚀 2. 성공 시 커뮤니티 목록(CommunityScreen)으로 돌아가기
+                                navController.popBackStack()
+                            } else {
+                                Toast.makeText(context, "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
-                },
-                actions = {
-                    // ✅ 등록 버튼: 클릭 시 커뮤니티 목록으로 이동
-                    Surface(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clickable {
-                                if (title.isBlank()) {
-                                    Toast.makeText(context, "제목을 입력해주세요", Toast.LENGTH_SHORT).show()
-                                } else if (content.isBlank()) {
-                                    Toast.makeText(context, "본문을 입력해주세요", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    // 1. 성공 메시지
-                                    Toast.makeText(context, "성공적으로 등록되었습니다!", Toast.LENGTH_SHORT).show()
-
-                                    // 2. 🚀 커뮤니티 목록 화면으로 이동
-                                    // 주의: Routes.Community 부분은 본인의 Navigation 설정에 맞게 수정하세요.
-                                    navController.navigate(Routes.CommunityDetail) {
-                                        // 글쓰기 화면을 스택에서 제거 (뒤로가기 시 다시 글쓰기창이 안 나오게 함)
-                                        popUpTo(Routes.CommunityPost) { inclusive = true }
-                                    }
-                                }
-                            },
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color(0xFFC5E1A5)
-                    ) {
-                        Text(
-                            text = "등록",
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF33691E)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                modifier = Modifier.statusBarsPadding()
+                }
             )
         }
     ) { innerPadding ->
@@ -104,86 +66,125 @@ fun CommunityPostScreen(navController: NavController) {
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+            item { Spacer(modifier = Modifier.height(10.dp)) }
 
-                // 1️⃣ 제목 입력창
-                OutlinedTextField(
+            // 1. 제목 입력 (상단)
+            item {
+                Text("제목", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(8.dp))
+                PostInputField(
                     value = title,
                     onValueChange = { title = it },
-                    placeholder = { Text("제목을 입력하세요", color = Color.LightGray) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White,
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
-                        focusedBorderColor = Color(0xFFC5E1A5)
-                    ),
-                    shape = RoundedCornerShape(8.dp),
+                    placeholder = "제목을 입력하세요",
                     singleLine = true
                 )
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            // 2. 카테고리 선택 (중간)
+            item {
+                Text("카테고리", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(8.dp))
+                TagSelector(tags, selectedTag) { selectedTag = it }
+            }
 
-                // 2️⃣ 태그 선택 영역
-                Text(text = "카테고리 선택", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    tags.forEach { tag ->
-                        val isSelected = selectedTag == tag
-                        Surface(
-                            modifier = Modifier.clickable { selectedTag = tag },
-                            shape = RoundedCornerShape(16.dp),
-                            color = if (isSelected) Color(0xFF88AB75) else Color.White,
-                            border = if (isSelected) null else BorderStroke(1.dp, Color(0xFFE0E0E0))
-                        ) {
-                            Text(
-                                text = tag,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                fontSize = 12.sp,
-                                color = if (isSelected) Color.White else Color.Gray,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // 3️⃣ 본문 입력창
-                OutlinedTextField(
+            // 3. 본문 입력 (하단)
+            item {
+                Text("본문", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Spacer(modifier = Modifier.height(8.dp))
+                PostInputField(
                     value = content,
                     onValueChange = { content = it },
-                    placeholder = {
-                        Text(
-                            text = "※ 커뮤니티 규칙에 위배되는 게시글은 통보 없이 삭제될 수 있습니다.\n\n" +
-                                    "1. 타인을 비방하거나 욕설 금지\n" +
-                                    "2. 학업 공유 외 목적 사용 금지\n" +
-                                    "3. 도배 및 광고 금지",
-                            fontSize = 13.sp,
-                            lineHeight = 22.sp,
-                            color = Color.LightGray
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 400.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White,
-                        unfocusedBorderColor = Color(0xFFE0E0E0),
-                        focusedBorderColor = Color(0xFFC5E1A5)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                    placeholder = "나누고 싶은 이야기를 적어주세요.\n\n※ 비방이나 욕설은 제재 대상이 될 수 있습니다.",
+                    modifier = Modifier.heightIn(min = 400.dp)
                 )
+            }
 
-                Spacer(modifier = Modifier.height(40.dp))
+            item { Spacer(modifier = Modifier.height(40.dp)) }
+        }
+    }
+}
+
+// --- 여기서부터는 화면을 구성하는 작은 부품들입니다 ---
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PostTopBar(onBackClick: () -> Unit, onRegisterClick: () -> Unit) {
+    CenterAlignedTopAppBar(
+        title = { Text("글쓰기", fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+        navigationIcon = {
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.DarkGray)
+            }
+        },
+        actions = {
+            // 사각형 모양의 작은 등록 버튼
+            Surface(
+                modifier = Modifier
+                    .padding(end = 12.dp)
+                    .clickable { onRegisterClick() },
+                shape = RoundedCornerShape(4.dp),
+                color = Color(0xFFC5E1A5)
+            ) {
+                Text(
+                    text = "등록",
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF33691E)
+                )
+            }
+        },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
+    )
+}
+
+@Composable
+fun TagSelector(tags: List<String>, selectedTag: String, onTagSelected: (String) -> Unit) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        items(tags) { tag ->
+            val isSelected = tag == selectedTag
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (isSelected) Color(0xFFC5E1A5) else Color.White)
+                    .border(1.dp, if (isSelected) Color(0xFF9CCC65) else Color(0xFFE0E0E0), RoundedCornerShape(20.dp))
+                    .clickable { onTagSelected(tag) }
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+            ) {
+                Text(
+                    text = tag,
+                    fontSize = 12.sp,
+                    color = if (isSelected) Color(0xFF33691E) else Color.Gray,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                )
             }
         }
     }
+}
+
+@Composable
+fun PostInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = false
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text(placeholder, color = Color.LightGray, fontSize = 14.sp) },
+        modifier = modifier.fillMaxWidth(),
+        singleLine = singleLine,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
+        ),
+        shape = RoundedCornerShape(8.dp)
+    )
 }

@@ -1,34 +1,34 @@
 package com.a32b.plant.ui.feature.community.viewmodel
 
-import android.R.attr.author
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.a32b.plant.ui.feature.community.ui.Post
+import com.a32b.plant.data.model.Post
 import com.a32b.plant.data.repository.PostRepository
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-class CommunityPostViewModel(private val repository: PostRepository, private val type: String?) : ViewModel() {
+class CommunityPostViewModel(private val repository: PostRepository) : ViewModel() {
 
-    // ✅ 화면에서 등록 버튼을 누르면 실행될 함수
+    // ✅ 게시글 저장 함수
     fun savePost(title: String, content: String, tag: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                // 🚀 Post의 변수 이름들과 100% 일치해야 에러가 안 납니다!
-                // ViewModel 내부의 savePost 함수 부분
                 val newPost = Post(
                     id = "",
-                   // nickName = " ",
+                    nickName = "성호", // 👈 팀 약속대로 nickName 추가!
                     content = "[$tag] $title\n$content",
                     commentCount = 0,
                     likeCount = 0,
                     isLiked = false,
-                    createdAt = "2026-03-25"
+                    createdAt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) // ✅ 오늘 날짜 자동 입력
                 )
 
                 repository.uploadPost(newPost)
-                onComplete(true) // 성공 알림
+                onComplete(true)
             } catch (e: Exception) {
-                onComplete(false) // 실패 알림
+                onComplete(false)
             }
         }
     }

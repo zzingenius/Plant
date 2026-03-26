@@ -3,13 +3,19 @@ package com.a32b.plant.core.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.ui.feature.auth.ui.SignInScreen
 import com.a32b.plant.ui.feature.auth.ui.SignUpScreen
 import com.a32b.plant.ui.feature.community.ui.CommunityListScreen
 import com.a32b.plant.ui.feature.community.ui.CommunityPostScreen
+import com.a32b.plant.ui.feature.community.ui.CommunityDetailScreen
+import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
+import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
 import com.a32b.plant.ui.feature.home.ui.HomeScreen
 import com.a32b.plant.ui.feature.mypage.ui.MypageScreen
 import com.a32b.plant.ui.feature.splash.SplashViewModel
@@ -23,12 +29,31 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
         NavHost(navController = navController, startDestination = startRoute){
             composable<Routes.HomeMain> { HomeScreen(navController) }
             composable<Routes.Mypage> { MypageScreen(navController) }
+
+            // 1. 커뮤니티 리스트
             composable<Routes.CommunityList> { CommunityListScreen(navController) }
-            composable<Routes.CommunityPost> { CommunityPostScreen(navController) }
+
+            // 2. 커뮤니티 글쓰기
+            composable<Routes.CommunityPost> {
+                val postViewModel: CommunityPostViewModel = viewModel(
+                    factory = ViewModelFactory.communityPostViewModelFactory
+                )
+                CommunityPostScreen(navController, postViewModel)
+            }
+
+
+            composable<Routes.CommunityDetail> { backStackEntry ->
+
+                val route = backStackEntry.toRoute<Routes.CommunityDetail>()
+                val detailViewModel: CommunityDetailViewModel = viewModel(
+                    factory = ViewModelFactory.communityDetailViewModelFactory(route.postId)
+                )
+                CommunityDetailScreen(navController, detailViewModel)
+            }
+
             composable<Routes.Studying> { StudyingScreen(navController) }
             composable<Routes.SignIn> { SignInScreen(navController) }
             composable<Routes.SignUp> { SignUpScreen(navController) }
         }
     }
-
 }
