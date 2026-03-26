@@ -21,7 +21,8 @@ class HomeViewModel(private val userRepository: UserRepository) : ViewModel() {
     변수명 : 외부에서 읽는 데이터.
     _변수명이 바뀌면 자동으로 값이 업데이트가 되게 하기 위해 .asStaeFlow() 붙이기
      */
-    private val currentUid: String get() = CurrentUser.uid
+    //private val currentUid: String get() = CurrentUser.uid
+    private val currentUid: String = "ARnkLKJE60MuhYMgivXweboI6ch2"
     private val _userName = MutableStateFlow("사용자")
     val userName = _userName.asStateFlow()
     private val _currentDate = MutableStateFlow("")

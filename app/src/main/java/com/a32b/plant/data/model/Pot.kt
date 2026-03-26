@@ -6,7 +6,6 @@ data class PotInfo(
     val tag: String = "",
     val name: String = "",
     val imageUrl: String = "",
-    val todayStudyingTime: Long? = null,
     val pottotalStudyingTime: Long? = null
 ){
     //레벨 업 계산
