@@ -20,6 +20,7 @@ import com.a32b.plant.ui.feature.home.ui.HomeScreen
 import com.a32b.plant.ui.feature.home.ui.NewBornTreeScreen
 import com.a32b.plant.ui.feature.mypage.ui.MypageScreen
 import com.a32b.plant.ui.feature.splash.SplashViewModel
+import com.a32b.plant.ui.feature.studyPalnDtail.ui.StudyPlanDetailScreen
 import com.a32b.plant.ui.feature.studying.ui.StudyResultScreen
 import com.a32b.plant.ui.feature.studying.ui.StudyingScreen
 
@@ -51,6 +52,7 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
             composable<Routes.SignIn> { SignInScreen(navController) }
             composable<Routes.SignUp> { SignUpScreen(navController) }
             composable<Routes.NewBornTree> { NewBornTreeScreen(navController) }
+            composable<Routes.StudyPlanDetail> { StudyPlanDetailScreen(navController = navController) }
         }
     }
 }
