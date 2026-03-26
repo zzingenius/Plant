@@ -19,12 +19,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +39,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.toRoute
@@ -53,7 +59,6 @@ import java.time.LocalDateTime
 
 @Composable
 fun StudyingScreen(navController: NavController) {
-    val context = LocalContext.current
 
     //이전 스택에서 보낸 값을 args에 넣어서 뽑아낼 수 있음
     val args = navController.currentBackStackEntry?.toRoute<Routes.Studying>()
@@ -64,21 +69,27 @@ fun StudyingScreen(navController: NavController) {
     Log.d("tag", tag)
     //뷰모델 연결해주기
 
-    val viewModel : StudyingViewModel = viewModel(factory = ViewModelFactory.studyingViewModelFactory(tag))
+    val viewModel : StudyingViewModel = viewModel(factory = ViewModelFactory.studyingViewModelFactory(tag, potId))
 
+    val uiState by viewModel.uiState.collectAsState()
+    val timerButtonText = if (uiState.isStudying) "일시정지" else "학습하기"
+    val timerButtonBack = if (uiState.isStudying) sub2 else primary
 
     LaunchedEffect(Unit) {
-        viewModel.fetchStudyingUsers()
+        viewModel.onStudyingUsersChange()
+        viewModel.event.collect {
+            navController.navigate(Routes.StudyFinish){
+                popUpTo(Routes.HomeMain) { inclusive = false }
+            }
+
+        }
     }
 
     val startTime = remember {
         val now = LocalDateTime.now()
         TimeFormatter.formatToTimeOnly(now) }
 
-    val studyingUsers = viewModel.studyingUsers
-//    studyingUsers.add(StudyingUser("0", "닉네임", "lv.0", "자격증", 300000))
-//    studyingUsers.add(StudyingUser("0", "닉네임1", "lv.1", "자격증", 30000))
-//    studyingUsers.add(StudyingUser("0", "닉네임2", "lv.5", "자격증", 1000000))
+    val studyingUsers = uiState.studyingUsers
     Surface(modifier = Modifier.fillMaxSize(),
         color = Color(0xFFF8F6F6)
     ) {
@@ -92,14 +103,15 @@ fun StudyingScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(70.dp))
             Text("$startTime ~", style = Typography.bodyMedium, fontSize = 13.sp)
-            SetTimer(viewModel.timeMillis)
+            SetTimer(viewModel.uiState.value.timer)
 
             Spacer(modifier = Modifier.height(30.dp))
             Row {
                 //일시정지/학습시작 버튼
-                Button(viewModel.buttonText, viewModel.buttonBack){ viewModel.toggleStudyStatus()}
+                Button(timerButtonText, timerButtonBack){ viewModel.onStudyingStatusChange()}
                 Button("학습종료", sub1) {
                     viewModel.stopStopwatch()
+                    viewModel.onIsStudyFinishChange()
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -181,4 +193,30 @@ fun StudyinUserItem(user: StudyingUser){
         Text(text = user.nickname, style = MaterialTheme.typography.bodyMedium)
         Text(text = " ${TimeFormatter.formatToMinute(user.studyingTime)} 째 공부중!", style = MaterialTheme.typography.bodyMedium)
     }
+}
+
+@Composable
+fun StudyFinishDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (List<String>) -> Unit,
+    tag: String,
+    title: String
+){
+    val inputs = remember { mutableStateListOf("") }
+    Dialog(onDismissRequest = onDismiss) {
+        Card(shape = RoundedCornerShape(22.dp)) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text("학습 종료", style = Typography.titleSmall)
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                Text("[$tag] $title")
+                Spacer(modifier = Modifier.height(3.dp))
+
+//                inputs.forEach { index, value ->
+//                    OutlinedTextField(value = value, onValueChange = {inputs[index] = it})
+//
+//                }
+            }
+        }
+    }
+
 }
