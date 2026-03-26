@@ -9,13 +9,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.a32b.plant.data.di.ViewModelFactory
-import com.a32b.plant.ui.feature.auth.ui.SignInScreen
-import com.a32b.plant.ui.feature.auth.ui.SignUpScreen
+import com.a32b.plant.ui.feature.community.ui.CommunityDetailScreen
 import com.a32b.plant.ui.feature.community.ui.CommunityListScreen
 import com.a32b.plant.ui.feature.community.ui.CommunityPostScreen
-import com.a32b.plant.ui.feature.community.ui.CommunityDetailScreen
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
+import com.a32b.plant.ui.feature.auth.ui.SignInScreen
+import com.a32b.plant.ui.feature.auth.ui.SignUpScreen
 import com.a32b.plant.ui.feature.home.ui.HomeScreen
 import com.a32b.plant.ui.feature.home.ui.NewBornTreeScreen
 import com.a32b.plant.ui.feature.mypage.ui.MypageScreen
@@ -29,23 +29,35 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
 
     val destination by viewModel.destination.collectAsState()
     destination?.let { startRoute ->
-        NavHost(navController = navController, startDestination = startRoute) {
+        NavHost(navController = navController, startDestination = startRoute){
+
             composable<Routes.HomeMain> { HomeScreen(navController) }
             composable<Routes.Mypage> { MypageScreen(navController) }
             composable<Routes.MypageSetting> { MypageSetting(navController) }
 
-            // 1. 커뮤니티 리스트
-            composable<Routes.CommunityList> { CommunityListScreen(navController) }
-
-            // 2. 커뮤니티 글쓰기
-            composable<Routes.CommunityPost> {
-
-                CommunityPostScreen(navController)
+            composable<Routes.CommunityList> {
+                CommunityListScreen(navController)
             }
 
-            composable<Routes.CommunityDetail> {
+            composable<Routes.CommunityPost> {
+                val postVm: CommunityPostViewModel = viewModel(
+                    factory = ViewModelFactory.communityPostViewModelFactory
+                )
+                CommunityPostScreen(navController, postVm)
+            }
 
-                CommunityDetailScreen(navController)
+            // ✅ 2. 상세 화면 조립 방식 수정
+            composable<Routes.CommunityDetail> { backStackEntry ->
+                val route = backStackEntry.toRoute<Routes.CommunityDetail>()
+                val detailVm: CommunityDetailViewModel = viewModel(
+                    factory = ViewModelFactory.communityDetailViewModelFactory(route.postId)
+                )
+
+                // navController를 직접 주는 게 아니라, '뒤로가기 버튼을 눌렀을 때의 동작'을 전달합니다.
+                CommunityDetailScreen(
+                    onBack = { navController.popBackStack() }, // 👈 이렇게 써야 에러가 안 납니다!
+                    viewModel = detailVm
+                )
             }
 
             composable<Routes.Studying> { StudyingScreen(navController) }

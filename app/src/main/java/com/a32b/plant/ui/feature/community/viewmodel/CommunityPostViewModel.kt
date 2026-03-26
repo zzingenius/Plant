@@ -11,13 +11,12 @@ import java.util.Locale
 
 class CommunityPostViewModel(private val repository: PostRepository) : ViewModel() {
 
-    // ✅ 게시글 저장 함수
     fun savePost(title: String, content: String, tag: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 val newPost = Post(
                     id = "",
-                    nickName = "성호", // 👈 팀 약속대로 nickName 추가!
+                    nickName = "성호",
                     content = "[$tag] $title\n$content",
                     commentCount = 0,
                     likeCount = 0,
