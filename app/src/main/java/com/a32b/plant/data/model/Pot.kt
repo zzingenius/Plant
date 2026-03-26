@@ -5,7 +5,6 @@ import com.google.firebase.firestore.ServerTimestamp
 
 //화분 정보 모음
 data class PotInfo(
-    val uid : String = "",
     val id: String = "",
     val tag: String = "",
     val name: String = "",
