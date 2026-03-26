@@ -188,7 +188,7 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit,
 
             // [공부 시간] 화분이 없으면 00:00:00
             Text(
-                text = TimeFormatter.formatToDigitalClock(displayPot.pottotalStudyingTime?:0L),
+                text = TimeFormatter.formatToDigitalClock(displayPot.potTotalStudyingTime?:0L),
                 style = MaterialTheme.typography.titleLarge
             )
 
@@ -265,7 +265,7 @@ fun GridPlantItem(
             ) {
                 // 총 공부 시간 (Medium 적용)
                 Text(
-                    text = TimeFormatter.formatToDigitalClock(pot.pottotalStudyingTime ?: 0L),
+                    text = TimeFormatter.formatToDigitalClock(pot.potTotalStudyingTime ?: 0L),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Black
                 )
