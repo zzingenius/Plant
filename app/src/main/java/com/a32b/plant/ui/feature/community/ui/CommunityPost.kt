@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -29,14 +28,14 @@ import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityPostScreen(
-    navController: NavController
-
+    navController: NavController,
+    postVm: CommunityPostViewModel
 ) {
     val context = LocalContext.current
     val viewModel: CommunityPostViewModel = viewModel(
         factory = ViewModelFactory.communityPostViewModelFactory
     )
-    // 상태 관리 (입력값들)
+
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var selectedTag by remember { mutableStateOf("고등학생") }
@@ -87,14 +86,12 @@ fun CommunityPostScreen(
                 )
             }
 
-            // 2. 카테고리 선택 (중간)
             item {
                 Text("카테고리", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
                 Spacer(modifier = Modifier.height(8.dp))
                 TagSelector(tags, selectedTag) { selectedTag = it }
             }
 
-            // 3. 본문 입력 (하단)
             item {
                 Text("본문", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -111,7 +108,6 @@ fun CommunityPostScreen(
     }
 }
 
-// --- 여기서부터는 화면을 구성하는 작은 부품들입니다 ---
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,7 +120,6 @@ fun PostTopBar(onBackClick: () -> Unit, onRegisterClick: () -> Unit) {
             }
         },
         actions = {
-            // 사각형 모양의 작은 등록 버튼
             Surface(
                 modifier = Modifier
                     .padding(end = 12.dp)

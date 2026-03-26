@@ -35,7 +35,6 @@ fun CommunityListScreen(navController: NavController) {
     val postList by viewModel.uiState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    // ✅ 중복 선택된 태그들을 저장하는 주머니 (Set을 사용해서 중복 방지 및 다중 저장)
     var selectedTags by remember { mutableStateOf(setOf<String>()) }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -85,14 +84,12 @@ fun CommunityListScreen(navController: NavController) {
             currentSelected = selectedTags,
             onDismiss = { showDialog = false },
             onApply = { newSelection ->
-                selectedTags = newSelection // 선택된 태그들을 최종 반영
-                // TODO: viewModel.updateFilter(selectedTags) 등 서버 필터링 로직 연결 가능
+                selectedTags = newSelection
                 showDialog = false
             }
         )
     }
 }
-
 @Composable
 fun SearchBarSection(query: String, onQueryChange: (String) -> Unit, onFilterClick: () -> Unit, isFilterActive: Boolean) {
     OutlinedTextField(
@@ -118,14 +115,12 @@ fun SearchBarSection(query: String, onQueryChange: (String) -> Unit, onFilterCli
         singleLine = true
     )
 }
-
 @Composable
 fun CategoryDialog(
     currentSelected: Set<String>,
     onDismiss: () -> Unit,
     onApply: (Set<String>) -> Unit
 ) {
-    // 다이얼로그 안에서만 임시로 관리하는 상태 (취소 시 반영 안 되게)
     var tempSelected by remember { mutableStateOf(currentSelected) }
     val filterTags = listOf("중학생", "고등학생", "취준", "자격증", "취미", "자랑", "공유")
 
@@ -140,7 +135,7 @@ fun CategoryDialog(
                             val isSelected = tempSelected.contains(tag)
                             Surface(
                                 modifier = Modifier.weight(1f).clickable {
-                                    // ✅ 클릭 시 있으면 빼고, 없으면 넣는 중복 선택 로직
+
                                     tempSelected = if (isSelected) tempSelected - tag else tempSelected + tag
                                 },
                                 shape = RoundedCornerShape(8.dp),
@@ -166,7 +161,6 @@ fun CategoryDialog(
         }
     )
 }
-
 @Composable
 fun PostCard(post: Post, onClick: () -> Unit) {
     Card(
@@ -178,7 +172,7 @@ fun PostCard(post: Post, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(text = post.content, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Text(text = post.createdAt, fontSize = 11.sp, color = Color.Gray)
+                Text(text = post.createdAt.toString(), fontSize = 11.sp, color = Color.Gray)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -198,7 +192,6 @@ fun PostCard(post: Post, onClick: () -> Unit) {
         }
     }
 }
-
 @Composable
 fun IconStat(iconRes: Any, text: String, tint: Color = Color.Gray) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -209,7 +202,6 @@ fun IconStat(iconRes: Any, text: String, tint: Color = Color.Gray) {
         Text(text = " $text", fontSize = 11.sp, color = tint)
     }
 }
-
 @Composable
 fun EmptyStateView() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
