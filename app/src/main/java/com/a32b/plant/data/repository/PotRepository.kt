@@ -147,7 +147,7 @@ class PotRepository(private val db: FirebaseFirestore) {
             id = newDocRef.id,
             tag = tag,
             name = name,
-            todayStudyingTime = 0L
+            pottotalStudyingTime = 0L
         )
 
         //DB에 저장
