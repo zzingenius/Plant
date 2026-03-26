@@ -140,7 +140,7 @@ fun StudyingScreen(navController: NavController) {
                 StateChangeButton(timerButtonText, timerButtonBack){ viewModel.onStudyingStatusChange()}
                 StateChangeButton("학습종료", sub1) {
                     viewModel.stopStopwatch()
-                    viewModel.onDialogShownChange()
+                    viewModel.onFinishDialogShownChange()
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -148,7 +148,7 @@ fun StudyingScreen(navController: NavController) {
             StudyingUserCard(studyingUsers, tag)
         }
     }
-    if(uiState.isDialogShown){
+    if(uiState.isFinishDialogShown){
         StudyFinishDialog(onDismiss = {viewModel.onDialogDismissClick()},onConfirm = { logs ->
             Log.d("입력값 확인", logs.toString())
             viewModel.onIsStudyFinishChange()

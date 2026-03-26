@@ -1,11 +1,15 @@
 package com.a32b.plant.data.repository
 
+import android.content.Context
 import android.util.Log
+import com.a32b.plant.data.local.StudyingDataStore
+import com.a32b.plant.data.local.StudyingSession
 import com.a32b.plant.data.model.StudyingUser
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
 class StudyingRepository(private val db: FirebaseFirestore) {
+    private val datasore = StudyingDataStore
     suspend fun getStudyingUser(tag: String): List<StudyingUser>{
         return try{
             db.collection("studying")
@@ -41,6 +45,10 @@ class StudyingRepository(private val db: FirebaseFirestore) {
         }
 
     }
+    suspend fun saveSession(context: Context, session: StudyingSession) = datasore.save(context, session)
+    fun readSession(context: Context) = datasore.read(context)
+    suspend fun clearSession(context: Context) = datasore.clear(context)
+
     suspend fun deleteStudyingUser(){
 
     }

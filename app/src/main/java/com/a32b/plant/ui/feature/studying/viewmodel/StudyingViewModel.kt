@@ -21,7 +21,7 @@ data class StudyingUiState(
     val isStudying: Boolean = true, //스톱워치 가동을 위한 공부중 여부 체크
     val buttonText: String = "일시정지",
     val studyingUsers: List<StudyingUser> = emptyList(),
-    val isDialogShown: Boolean = false, //다이얼로그 표출 여부 체크
+    val isFinishDialogShown: Boolean = false, //다이얼로그 표출 여부 체크
     val studyLog: List<String> = emptyList(),
     val isStduyFinish: Boolean = false //true시 학습 완전 종료, 디비로 값 넘기기
 )
@@ -49,9 +49,12 @@ class StudyingViewModel(
 
     private val _uiState = MutableStateFlow(StudyingUiState(tag = tag))
     val uiState = _uiState.asStateFlow()
-    //
+
     private val _eventChannel = Channel<StudyingEvent>(Channel.BUFFERED)
     val event = _eventChannel.receiveAsFlow()
+
+    /** 로컬에서 비정상 종료가 있는지 감지   */
+
 
     /** db에서 같은 태그로 공부중인 사용자 데이터 가져오기 */
     fun onStudyingUsersChange(){
@@ -67,10 +70,10 @@ class StudyingViewModel(
         if(_uiState.value.isStudying) startStopwatch()
         else stopStopwatch()
     }
-    fun onTimerChange() = _uiState.update { it.copy(timer = it.timer + 1000 ) }
 //data store <- sharedPreference 상위호환 느낌
     /** 스톱워치 */
     private var job: Job? = null
+    fun onTimerChange() = _uiState.update { it.copy(timer = it.timer + 1000 ) }
     fun startStopwatch(){
         job?.cancel()
         job = viewModelScope.launch {
@@ -94,14 +97,18 @@ class StudyingViewModel(
     init {
         startStopwatch()
     }
-    fun onDialogShownChange() = _uiState.update { it.copy(isDialogShown = !it.isDialogShown) }
 
+    /**  학습 종료 버튼 클릭 시 학습 기록하는 다이얼로그 표출    */
+    fun onFinishDialogShownChange() = _uiState.update { it.copy(isFinishDialogShown = !it.isFinishDialogShown) }
+
+    fun setStudyLog(log: List<String>) = _uiState.update { it.copy(studyLog = log) }
 
     fun onDialogDismissClick(){
-        _uiState.update { it.copy(isDialogShown = false, isStudying = true) }
+        _uiState.update { it.copy(isFinishDialogShown = false, isStudying = true) }
         startStopwatch()
     }
 
+    /** 학습 완전 종료 시 (= 다이얼로그에서도 기록 입력 후 종료 버튼 클릭했을 때)    */
     fun onIsStudyFinishChange() = _uiState.update { it.copy(isStduyFinish = true) }
     fun getCurrentTime(): String{
         val now = LocalDateTime.now()
@@ -125,7 +132,6 @@ class StudyingViewModel(
         }
     }
 
-    fun setStudyLog(log: List<String>) = _uiState.update { it.copy(studyLog = log) }
 
 
 
