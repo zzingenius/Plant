@@ -17,7 +17,7 @@ class PotRepository(private val db: FirebaseFirestore) {
 
     //태그 획득
     fun getAvailableTags(): Flow<List<String>> = callbackFlow {
-        val collectionRef = db.collection("tags")
+        val collectionRef = db.collection("tags").orderBy("id").limit(5)
 
         // 데이터 변경 감지
         val listener = collectionRef.addSnapshotListener { snapshot, error ->
@@ -26,7 +26,7 @@ class PotRepository(private val db: FirebaseFirestore) {
                 return@addSnapshotListener
             }
             //name 필드값 추출 -> 리스트화
-            val tags = snapshot?.documents?.mapNotNull { it.id }?: emptyList()
+            val tags = snapshot?.documents?.mapNotNull { doc -> doc.id }?: emptyList()
 
             //data 전송
             trySend(tags)

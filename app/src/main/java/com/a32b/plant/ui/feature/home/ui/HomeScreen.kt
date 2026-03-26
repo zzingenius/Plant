@@ -68,7 +68,7 @@ fun HomeScreen(navController: NavController) {
                         // 화분이 있을 때만 공부 페이지로 이동
                         if (!(displayPot.id.isNullOrEmpty())) {
                             navController.navigate(
-                                Routes.Studying(displayPot.id!!, displayPot.tag?: "", displayPot.name ?: "")
+                                Routes.Studying(displayPot.id!!, displayPot.tag?: "", displayPot.name ?: "", displayPot.level)
                             )
                         }
                     },
