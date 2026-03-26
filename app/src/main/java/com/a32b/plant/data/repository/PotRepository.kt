@@ -69,7 +69,9 @@ class PotRepository(private val db: FirebaseFirestore) {
     //    "timestamp" to FieldValue.serverTimestamp()
     suspend fun createPot() {
         val pot = PotInfo(
-            uid = "VosJjoUJp6SplH0siKyoAIBZ7fk2",
+            //사용자의 하위 컬렉션으로 화분 생성 -> uid 별도 기입 불필요
+            // 테스트용인걸 알지만 오류가 나서 불가피하게 주석 처리
+            //uid = "VosJjoUJp6SplH0siKyoAIBZ7fk2",
             tag = "자격증",
             name = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
             pottotalStudyingTime = 0L,

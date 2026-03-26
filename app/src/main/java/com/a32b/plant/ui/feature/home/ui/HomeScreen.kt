@@ -91,24 +91,24 @@ fun HomeScreen(navController: NavController) {
                         .padding(horizontal = 20.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-//                    rowPots.forEach { pot ->
-//                        GridPlantItem(
-//                            pot = pot,
-//                            modifier = Modifier.weight(1f),
-//                            // [콜백 1] 이미지 클릭 시 -> 메인 카드 교체
-//                            onImageClick = {
-//                                viewModel.selectPot(pot)
-//                            },
-//                            // [콜백 2] 텍스트 클릭 시 -> 학습 계획창으로 이동 
-                              // 학습 계획창 미 개발로 인한 오류로 주석 처리
-//                            onTextClick = {
-//                                // Routes.Plan이 (id, tag, name)을 받는 인자 구조인지 확인 필요
-//                                navController.navigate(
-//                                    Routes.Plan(pot.id, pot.tag, pot.name)
-//                                )
-//                            }
-//                        )
-//                    }
+                    rowPots.forEach { pot ->
+                        GridPlantItem(
+                            pot = pot,
+                            modifier = Modifier.weight(1f),
+                            // [콜백 1] 이미지 클릭 시 -> 메인 카드 교체
+                            onImageClick = {
+                                viewModel.selectPot(pot)
+                            },
+                            // [콜백 2] 텍스트 클릭 시 -> 학습 계획창으로 이동
+                            onTextClick = {
+                                //  계획 페이지 개발 완료 시 아래 주석 해제
+                                // navController.navigate(Routes.Plan(pot.id, pot.tag, pot.name))
+
+                                // 현재는 클릭 시 메인 카드로 교체되게 하거나 토스트를 띄울 수 있습니다.
+                                viewModel.selectPot(pot)
+                            }
+                        )
+                    }
 
                     // 빈 칸 채우기 로직
                     val emptySlots = 3 - rowPots.size
