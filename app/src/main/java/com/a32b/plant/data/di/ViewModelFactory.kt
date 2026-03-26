@@ -11,6 +11,7 @@ import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 //import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 import com.a32b.plant.ui.feature.home.viewmodel.NewBornTreeViewModel
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageViewModel
+import com.a32b.plant.ui.feature.studying.viewmodel.StudyResultViewModel
 import com.a32b.plant.ui.feature.studying.viewmodel.StudyingViewModel
 
 object ViewModelFactory {
@@ -44,9 +45,14 @@ object ViewModelFactory {
             return CommunityListViewModel(AppContainer.postRepository) as T
         }
     }
-    fun studyingViewModelFactory(tag: String, potId:String, title:String, startTime: String) = object : ViewModelProvider.Factory{
+    fun studyingViewModelFactory(tag: String, potId:String, title:String, startTime: String, level: String) = object : ViewModelProvider.Factory{
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return StudyingViewModel(AppContainer.studyingRepository, tag, potId, title, startTime) as T
+            return StudyingViewModel(AppContainer.studyingRepository, tag, potId, title, startTime, level) as T
+        }
+    }
+    fun studyResultViewModelFactory(timestamp: String, tag: String, title: String, log: List<String>, level: String) = object : ViewModelProvider.Factory{
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return StudyResultViewModel(AppContainer.potRepository, timestamp, tag, title, log, level) as T
         }
     }
     fun communityDetailViewModelFactory(postId : String) = object : ViewModelProvider.Factory{
