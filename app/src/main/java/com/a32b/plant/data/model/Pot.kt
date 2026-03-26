@@ -5,10 +5,10 @@ import com.google.firebase.firestore.ServerTimestamp
 
 //화분 정보 모음
 data class PotInfo(
-    val id: String = "",
-    val tag: String = "",
-    val name: String = "",
-    val imageUrl: String = "",
+    val id: String? = null,
+    val tag: String? = null,
+    val name: String? = null,
+    val imageUrl: String? = null,
     val pottotalStudyingTime: Long? = null,
     @ServerTimestamp
     val createdAt: Timestamp? = null,
