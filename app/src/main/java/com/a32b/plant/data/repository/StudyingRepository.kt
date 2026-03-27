@@ -9,7 +9,7 @@ import com.a32b.plant.data.model.StudyingUser
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 
-class StudyingRepository(private val db: FirebaseFirestore) {
+class StudyingRepository(private val db: FirebaseFirestore, private val appContext: Context) {
     private val datasore = StudyingDataStore
     suspend fun getStudyingUser(tag: String): List<StudyingUser>{
         return try{
