@@ -4,16 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.a32b.plant.ui.feature.auth.viewmodel.SignInViewModel
 import com.a32b.plant.ui.feature.auth.viewmodel.SignUpViewModel
-import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityListViewModel
+import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
 import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
-//import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 import com.a32b.plant.ui.feature.home.viewmodel.NewBornTreeViewModel
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageViewModel
 import com.a32b.plant.ui.feature.studying.viewmodel.StudyResultViewModel
 import com.a32b.plant.ui.feature.studying.viewmodel.StudyingViewModel
 
+@Suppress("UNCHECKED_CAST")
 object ViewModelFactory {
     val signInViewModelFactory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -96,7 +96,6 @@ object ViewModelFactory {
 
     val communityPostViewModelFactory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-
             return CommunityPostViewModel(AppContainer.postRepository) as T
         }
     }
