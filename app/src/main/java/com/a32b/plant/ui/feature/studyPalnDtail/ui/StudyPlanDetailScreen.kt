@@ -34,8 +34,11 @@ fun StudyPlanDetailScreen(
     val potInfo by viewModel.potDetail.collectAsState()
     val logs by viewModel.studyLogs.collectAsState()
 
-    // 다이얼로그 상태
+    // 제목 변경 다이얼로그 상태
     val isEditDialogShown by viewModel.isEditDialogShown.collectAsState()
+
+    // 상세 기록 삭제 다이얼로그 상태
+    val isDeleteDialogShown by viewModel.isEditDialogShown.collectAsState()
 
     //임시 텍스트
     var editNameText by remember(isEditDialogShown) {
@@ -93,16 +96,50 @@ fun StudyPlanDetailScreen(
         }
     ) { innerPadding ->
         // 학습 기록 리스트 영역
-        Box(modifier = Modifier.padding(innerPadding)){}
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(logs) { record ->
-                StudyRecordCard(log = record)
+        Box(modifier = Modifier.padding(innerPadding)) {
+            //학습 기록 없을 시
+            if (logs.isEmpty()) {
+                Text(
+                    text = "아직 학습 기록이 없습니다.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = fontColor
+                )
+            }
+            //학습 기록 리스트
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(logs) { record ->
+                    StudyRecordCard(
+                        log = record,
+                        onDeleteClick = {
+                            viewModel.deleteStudyLog(record.id)
+                        }
+                    )
+                }
+            }
+            // 삭제 확인 다이얼로그
+            if (isDeleteDialogShown){
+                AlertDialog(
+                    onDismissRequest = { viewModel.dismissDeleteDialog() },
+                    title = { Text("기록 삭제") },
+                    text = { Text("정말로 이 학습 기록을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.") },
+                    confirmButton = {
+                        TextButton(onClick = { viewModel.confirmDelete() }) {
+                            Text("예", color = Color.Red, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.dismissDeleteDialog() }) {
+                            Text("아니오", color = Color.Gray)
+                        }
+                    },
+                    shape = RoundedCornerShape(16.dp)
+                )
             }
         }
 
@@ -140,7 +177,9 @@ fun StudyPlanDetailScreen(
     }
 
 @Composable
-fun StudyRecordCard(log : StudyLog){
+fun StudyRecordCard(
+    log : StudyLog,
+    onDeleteClick: () -> Unit){
     // Timestamp -> LocalDateTime 변환
     val dateTime = log.createAt.toDate().toInstant()
         .atZone(ZoneId.systemDefault())
@@ -176,12 +215,15 @@ fun StudyRecordCard(log : StudyLog){
                 Spacer(modifier = Modifier.width(5.dp))
 
 //                 //삭제 버튼
-//                IconButton(onClick = /* delete*/) {
-//                    Icon(painterResource(R.drawable.ic_trash),
-//                        contentDescription = "상세 공부 기록 삭제",
-//                        tint = Color.LightGray
-//                    )
-//                }
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(painterResource(R.drawable.ic_trash),
+                        contentDescription = "상세 공부 기록 삭제",
+                        tint = Color.LightGray
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
 

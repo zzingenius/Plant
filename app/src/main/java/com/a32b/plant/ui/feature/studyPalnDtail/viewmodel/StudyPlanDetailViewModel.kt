@@ -65,6 +65,31 @@ class StudyPlanDetailViewModel(
             }
     }
 
+    // 삭제 확인 다이얼로그 출력 여부
+    private val _isDeleteDialogShown = MutableStateFlow(false)
+    val isDeleteDialogShown = _isDeleteDialogShown.asStateFlow()
+
+    //삭제 대기 로그 ID
+    private var pendingDeleteLogID : String = ""
+
+    fun showDeleteDialog(logId: String){
+        pendingDeleteLogID = logId
+        _isDeleteDialogShown.value = true
+    }
+
+    fun dismissDeleteDialog(){
+        _isDeleteDialogShown.value = false
+        pendingDeleteLogID = ""
+    }
+
+    //최종 삭제
+    fun confirmDelete(){
+        if(pendingDeleteLogID.isNotEmpty()){
+            deleteStudyLog(pendingDeleteLogID)
+            dismissDeleteDialog()
+        }
+    }
+
     init {
         fetchPotDetail()
         fetchStudyLogs()
