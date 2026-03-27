@@ -38,24 +38,67 @@ class StudyPlanDetailViewModel(
 
     init {
         fetchPotDetail()
+        fetchStudyLogs()
     }
 
+    //ID 검사
+    private fun isInvalidIds(vararg ids : String?): Boolean{
+        return ids.any {it.isNullOrEmpty()}
+    }
+
+    //화분 상세 정보 가져오기
     private fun fetchPotDetail() {
-        if (userId.isEmpty()) return
+        if (isInvalidIds(userId, potId)) return
 
         // Firestore 경로: users/{userId}/pots/{potId}
         db.collection("users").document(userId)
             .collection("pots").document(potId)
-            .collection("logs")
-            .orderBy("createAt", Query.Direction.DESCENDING)
             .get()
-            .addOnSuccessListener { querySnapshot ->
-                val logs = querySnapshot.toObjects(StudyLog::class.java)
-                _studyLogs.value = logs
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    _potDetail.value = document.toObject(PotInfo::class.java)?.copy(id = document.id)
+                }
             }
             .addOnFailureListener { e ->
                 Log.e("Firestore","데이터 로드 실패 : ${e.message}")
                 //Toast.makeText(context, "")
             }
+    }
+    private fun fetchStudyLogs(){
+        if(isInvalidIds(userId, potId)) return
+        db.collection("users").document(userId)
+            .collection("pots").document(potId)
+            .collection("logs")
+            .orderBy("createAt", Query.Direction.DESCENDING)
+            .get()
+            .addOnSuccessListener { querySnapshots ->
+                val logs = querySnapshots.documents.mapNotNull { doc ->
+                    //문서 ID -> StudyLog 객체에 입력 => 삭제 위해서
+                    doc.toObject(StudyLog::class.java)?.copy(doc.id)
+                }
+                _studyLogs.value = logs
+            }
+    }
+    fun deleteStudyLog(logId: String){
+        if(isInvalidIds(userId, potId, logId)) return
+        viewModelScope.launch {
+            db.collection("users").document(userId)
+                .collection("pots").document(potId)
+                .collection("logs").document(logId)
+                .delete()
+                .addOnSuccessListener {
+                    // 삭제 후 리스트 새로고침
+                    fetchStudyLogs()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firestore", "삭제 실패 : ${e.message}")
+                }
+        }
+    }
+    fun checkID(logId: String): Boolean{
+        return when {
+            userId.isEmpty() || potId.isEmpty() || logId.isEmpty() -> true
+            else -> false
+        }
     }
 }
