@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.ui.theme.fontColor
+import com.a32b.plant.ui.theme.title
 import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +33,15 @@ fun StudyPlanDetailScreen(
 ) {
     val potInfo by viewModel.potDetail.collectAsState()
     val logs by viewModel.studyLogs.collectAsState()
+
+    // 다이얼로그 상태
+    val isEditDialogShown by viewModel.isEditDialogShown.collectAsState()
+
+    //임시 텍스트
+    var editNameText by remember(isEditDialogShown) {
+        mutableStateOf(potInfo?.name?: "")
+    }
+
 
     Scaffold(
         topBar = {
@@ -54,7 +64,7 @@ fun StudyPlanDetailScreen(
                 },
                 actions = {
                     // 수정
-                    IconButton(onClick = { /* 수정 로직 */ }) {
+                    IconButton(onClick = { viewModel.setEditDialogShown(true) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_edit),
                             contentDescription = "수정하기",
@@ -83,6 +93,7 @@ fun StudyPlanDetailScreen(
         }
     ) { innerPadding ->
         // 학습 기록 리스트 영역
+        Box(modifier = Modifier.padding(innerPadding)){}
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -94,8 +105,40 @@ fun StudyPlanDetailScreen(
                 StudyRecordCard(log = record)
             }
         }
+
+            // 제목 변경 다이얼로그
+            if (isEditDialogShown) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.setEditDialogShown(false) },
+                    title = { Text("제목 변경", style = MaterialTheme.typography.titleMedium) },
+                    text = {
+                        OutlinedTextField(
+                            value = editNameText,
+                            onValueChange = { editNameText = it },
+                            label = { Text("화분 이름") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { viewModel.updatePotName(editNameText) },
+                            enabled = editNameText.isNotBlank() // 빈 칸 저장 방지
+                        ) {
+                            Text("확인", fontWeight = FontWeight.Bold, color = Color(0xFFA5C16C))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.setEditDialogShown(false) }) {
+                            Text("취소", color = Color.Gray)
+                        }
+                    },
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+        }
     }
-}
+
 @Composable
 fun StudyRecordCard(log : StudyLog){
     // Timestamp -> LocalDateTime 변환

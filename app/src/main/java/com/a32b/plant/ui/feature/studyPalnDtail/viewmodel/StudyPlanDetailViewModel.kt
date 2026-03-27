@@ -39,6 +39,32 @@ class StudyPlanDetailViewModel(
     private val _studyLogs = MutableStateFlow<List<StudyLog>>(emptyList())
     val studyLogs = _studyLogs.asStateFlow()
 
+    // 다이얼로그 출력 여부
+    private val _isEditDialogShown = MutableStateFlow(false)
+    val isEditDialogShown = _isEditDialogShown.asStateFlow()
+
+    //다이얼로그 표시/숨김 제어
+    fun setEditDialogShown(show: Boolean){
+        _isEditDialogShown.value = show
+    }
+
+    //화분 이름 업데이트
+    fun updatePotName(newName: String){
+        if (isInvalidIds(userId, potId) || newName.isBlank()) return
+
+        db.collection("users").document(userId)
+            .collection("pots").document(potId)
+            .update("name", newName) // Firestore의 'name' 필드만 업데이트
+            .addOnSuccessListener {
+                fetchPotDetail() // UI 갱신을 위해 데이터 다시 불러오기
+                setEditDialogShown(false) // 다이얼로그 닫기
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "이름 수정 실패: ${e.message}")
+                //Toast.makeText("수정 실패", "")
+            }
+    }
+
     init {
         fetchPotDetail()
         fetchStudyLogs()
