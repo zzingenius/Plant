@@ -96,7 +96,7 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
             .await()
     }
 
-    // 유저 닉네임, 고른 대표 식물 이미지 업데이트
+    // 유저 닉네임, 프로필 이미지 레벨 업데이트
     suspend fun updateNicknameAndImage(uid: String, nickname: String, imageLevel: String) {
         try {
             db.collection("users").document(uid)
@@ -163,5 +163,15 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
         }
     }
 
+    // uid 로 users/pots 데이터 가져오기
+    suspend fun getUsersPots(uid: String): List<PotInfo> {
+        return try {
+            db.collection("users").document(uid).collection("pots").get().await()
+                .toObjects(PotInfo::class.java)
+        } catch (e: Exception) {
+            Log.e("error", e.message.toString())
+            emptyList()
+        }
+    }
 }
 

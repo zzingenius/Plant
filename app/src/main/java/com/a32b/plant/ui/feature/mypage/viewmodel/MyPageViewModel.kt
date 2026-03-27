@@ -5,7 +5,9 @@ import androidx.activity.SystemBarStyle.Companion.dark
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.a32b.plant.core.util.TimeFormatter.formatToDigitalClock
+import com.a32b.plant.data.di.AppContainer.userRepository
 import com.a32b.plant.data.di.CurrentUser
+import com.a32b.plant.data.repository.NicknameRepository
 import com.a32b.plant.data.repository.PotRepository
 import com.a32b.plant.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +27,10 @@ data class MyPageUiState(
     val isUpdateSuccess: Boolean = false,
     val levelList: List<String> = emptyList(), // 프로필 편집 - 화분 이미지 띄우기 위해 쓰이는 레벨 리스트
     val isDarkMode: Boolean = false,
+    val isLoading: Boolean = false,
     val nicknameError: String? = null,
-    val totalStudyTime: String = "0시간 0분"
+    val totalStudyTime: String = "0시간 0분",
+    val completedPotCount: Int = 0,
 )
 
 sealed class MyPageEvent {
@@ -36,14 +40,20 @@ sealed class MyPageEvent {
 
 class MyPageViewModel(
     private val userRepository: UserRepository,
-    private val potRepository: PotRepository
+    private val potRepository: PotRepository,
+    private val nicknameRepository: NicknameRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MyPageUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            CurrentUser.uid = "ARnkLKJE60MuhYMgivXweboI6ch2"
+            CurrentUser.uid = "cf2MtNfq0lN5b0agyNSVqeoKuDc2"
+            // 현재 로그인된 유저 ID
+            //private val currentUid: String get() = CurrentUser.uid
+            // 테스트용 UID
+//            private val currentUid: String = "cf2MtNfq0lN5b0agyNSVqeoKuDc2"
+
 //            CurrentUser.uid = "RVmMPR05kVYeLyWYknUbGdmDnGG2"
             userRepository.getUserProfile(CurrentUser.uid).collectLatest { profile ->
                 if (profile != null) {
@@ -55,9 +65,27 @@ class MyPageViewModel(
                             totalStudyTime = formatToDigitalClock(profile.totalStudyTime ?: 0L)
                         )
                     }
+                    getCompletedPotCount()
+
                 } else {
-                    Log.e("PlantLog", "MyPageViewModel init - 사용자 uid 검색 결과 null")
+                    Log.e("error", "-----------사용자 정보 없음")
                 }
+            }
+        }
+    }
+
+    // 사용자의 완료 화분 개수 구해 _uiState.completedPotCount 에 넣기
+    fun getCompletedPotCount() {
+        viewModelScope.launch {
+            try {
+                val myPotList = userRepository.getUsersPots(CurrentUser.uid)
+                _uiState.update { it ->
+                    it.copy(
+                        completedPotCount = myPotList.count { it.isCompleted }
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("error", e.message.toString())
             }
         }
     }
@@ -67,39 +95,67 @@ class MyPageViewModel(
         viewModelScope.launch {
             val result = potRepository.getDuplicationLevelList(CurrentUser.uid)
             _uiState.update { it.copy(levelList = result) }
-//            Log.d("PlantLog", "getImageLevelList() - $result")
         }
     }
 
+    // 닉네임 검사용 2~10글자 허용
+    private fun checkNicknameValidation(text: String): String? {
+        val len = text.length
+        return if (len !in 2..10) {
+            "닉네임은 2자 이상 10자 이하로 입력해주세요"
+        } else {
+            null
+        }
+    }
+
+    // 검사o, 추가o, 삭제, 업데이트?
+    // 검사o, 추가o, 업데이트, 삭제?
     fun updateProfile(nickname: String, imageLevel: String) {
-        if (nickname.length <= 2) {
+        val validationResult = checkNicknameValidation(nickname)
+        if (validationResult != null) {
             _uiState.update {
                 it.copy(
                     isUpdateSuccess = false,
-                    nicknameError = "닉네임은 3글자 이상 입력해주세요"
+                    nicknameError = validationResult
                 )
             }
             return
-        } else {
-            viewModelScope.launch {
-                try {
-                    userRepository.updateNicknameAndImage(
-                        CurrentUser.uid,
-                        nickname,
-                        imageLevel
-                    )
-                    _uiState.update {
-                        it.copy(
-                            nickname = nickname,
-                            profileImg = imageLevel,
-                            isUpdateSuccess = true,
-                            nicknameError = null
-                        )
+        }
+        viewModelScope.launch {
+            try {
+                val currentNickname = _uiState.value.nickname
+                // 닉네임 같으면 프로필 사진만 변경하려는 의도로 판단
+                if (nickname != currentNickname) {
+                    // 닉네임 중복 검사
+                    if (nicknameRepository.isNicknameTaken(nickname)) {
+                        _uiState.update {
+                            it.copy(
+                                isUpdateSuccess = false,
+                                nicknameError = "이미 사용중인 닉네임입니다"
+                            )
+                        }
+                        return@launch
                     }
-                } catch (e: Exception) {
-                    Log.e("error", e.message.toString())
-                    _uiState.update { it.copy(isUpdateSuccess = false) }
+                    nicknameRepository.registerNickname(nickname)
+                    nicknameRepository.deleteNickname(currentNickname)
                 }
+
+                userRepository.updateNicknameAndImage(
+                    CurrentUser.uid,
+                    nickname,
+                    imageLevel
+                )
+                _uiState.update {
+                    it.copy(
+                        nickname = nickname,
+                        profileImg = imageLevel,
+                        isUpdateSuccess = true,
+                        nicknameError = null
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("error", e.message.toString())
+                _uiState.update { it.copy(isUpdateSuccess = false) }
             }
         }
     }
