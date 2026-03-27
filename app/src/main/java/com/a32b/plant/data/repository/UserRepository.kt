@@ -52,7 +52,7 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
         }
     }
 
-    // 유저 프로필 1회성 가져오기 (로그인 시 isFirstLogin 체크 등)
+    // 유저 프로필 1회성 가져오기 (로그인 시 isFirstLogin 체크용)
     suspend fun getUserProfileOnce(uid: String): UserProfile? {
         return try {
             val snapshot = db.collection("users").document(uid).get().await()
@@ -96,7 +96,7 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
             .await()
     }
 
-    // 유저 닉네임, 고른 대표 식물 이미지 업데이트
+    // 유저 닉네임, 프로필 이미지 레벨 업데이트
     suspend fun updateNicknameAndImage(uid: String, nickname: String, imageLevel: String) {
         try {
             db.collection("users").document(uid)
@@ -132,8 +132,8 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
     suspend fun getPotId() = "현재 팟 아이디"
 
     // ********************** push 할 때 autoLogin true 만들기
-    fun isAutoLogin() = true
-//     fun isAutoLogin() = false
+//    fun isAutoLogin() = true
+     fun isAutoLogin() = false
 
     // 마지막으로 선택한 화분의 ID를 Firestore에 업데이트합니다.
     suspend fun updateLastSelectedPot(uid: String, potId: String): Result<Unit> =
@@ -163,5 +163,15 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
         }
     }
 
+    // uid 로 users/pots 데이터 가져오기
+    suspend fun getUsersPots(uid: String): List<PotInfo> {
+        return try {
+            db.collection("users").document(uid).collection("pots").get().await()
+                .toObjects(PotInfo::class.java)
+        } catch (e: Exception) {
+            Log.e("error", e.message.toString())
+            emptyList()
+        }
+    }
 }
 

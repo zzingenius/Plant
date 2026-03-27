@@ -1,5 +1,6 @@
 package com.a32b.plant.ui.feature.mypage.ui
 
+import android.R.attr.enabled
 import android.R.attr.level
 import android.util.Log
 import android.widget.Toast
@@ -79,7 +80,7 @@ fun MypageScreen(navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            GrownTreesButton() {}
+            GrownTreesButton(completedPotCount = uiState.completedPotCount) {}
             DividerImage()
             ButtonTemplate(text = "커뮤니티 활동") { }
             ButtonTemplate(text = "앱 설정") {
@@ -137,7 +138,7 @@ fun DarkModeToggleButton(
 
 @Composable
 fun GrownTreesButton(
-    onClick: () -> Unit
+    completedPotCount: Int, onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
@@ -159,7 +160,7 @@ fun GrownTreesButton(
             )
             // -------- 03-26 users db pots 추가되면 가져오기
             Text(
-                text = "1 그루",
+                text = "${completedPotCount} 그루",
                 style = MaterialTheme.typography.bodyLarge
             )
         }
@@ -377,8 +378,9 @@ fun ProfileDialog(
 
                     Button(
                         onClick = {
-                            viewModel.updateProfile(newUserName, selectedImageLevel)
+                                viewModel.updateProfile(newUserName, selectedImageLevel)
                         },
+                        enabled = !uiState.isLoading, // 작업중이면 버튼 클릭 비활성화 하려고 추가
                         modifier = Modifier
                             .height(45.dp)
                             .weight(1f),
