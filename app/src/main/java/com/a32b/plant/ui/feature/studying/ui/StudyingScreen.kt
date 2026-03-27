@@ -84,7 +84,6 @@ fun StudyingScreen(navController: NavController) {
     val title = args.title
     val potId = args.potId
     val level = args.level
-    Log.d("tag", tag)
 
     val startTime = remember {
         val now = LocalDateTime.now()
@@ -140,7 +139,7 @@ fun StudyingScreen(navController: NavController) {
                 StateChangeButton(timerButtonText, timerButtonBack){ viewModel.onStudyingStatusChange()}
                 StateChangeButton("학습종료", sub1) {
                     viewModel.stopStopwatch()
-                    viewModel.onDialogShownChange()
+                    viewModel.onFinishDialogShownChange()
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
@@ -148,7 +147,7 @@ fun StudyingScreen(navController: NavController) {
             StudyingUserCard(studyingUsers, tag)
         }
     }
-    if(uiState.isDialogShown){
+    if(uiState.isFinishDialogShown){
         StudyFinishDialog(onDismiss = {viewModel.onDialogDismissClick()},onConfirm = { logs ->
             Log.d("입력값 확인", logs.toString())
             viewModel.onIsStudyFinishChange()
@@ -213,8 +212,8 @@ fun StudyingUserCard(users: List<StudyingUser>, tag: String){
         colors = CardDefaults.cardColors(containerColor = background),
         ) {
         Column(modifier = Modifier.padding(10.dp)) {
-            Text("$tag 5", style = MaterialTheme.typography.titleSmall)
-            users.forEach { user ->
+            Text("$tag ${users.size}", style = MaterialTheme.typography.titleSmall)
+            users.take(3).forEach { user ->
                 StudyinUserItem(user)
                 Spacer(modifier = Modifier.height(8.dp))
             }

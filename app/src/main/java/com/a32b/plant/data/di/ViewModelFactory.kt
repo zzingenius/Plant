@@ -62,14 +62,7 @@ object ViewModelFactory {
         level: String
     ) = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return StudyingViewModel(
-                AppContainer.studyingRepository,
-                tag,
-                potId,
-                title,
-                startTime,
-                level
-            ) as T
+            return StudyingViewModel(AppContainer.studyingRepository, AppContainer.potRepository,tag, potId, title, startTime, level) as T
         }
     }
 
