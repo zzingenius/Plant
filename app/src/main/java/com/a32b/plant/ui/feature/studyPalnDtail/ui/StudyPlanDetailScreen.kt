@@ -38,7 +38,7 @@ fun StudyPlanDetailScreen(
     val isEditDialogShown by viewModel.isEditDialogShown.collectAsState()
 
     // 상세 기록 삭제 다이얼로그 상태
-    val isDeleteDialogShown by viewModel.isEditDialogShown.collectAsState()
+    val isDeleteDialogShown by viewModel.isDeleteDialogShown.collectAsState()
 
     //임시 텍스트
     var editNameText by remember(isEditDialogShown) {
@@ -99,11 +99,16 @@ fun StudyPlanDetailScreen(
         Box(modifier = Modifier.padding(innerPadding)) {
             //학습 기록 없을 시
             if (logs.isEmpty()) {
-                Text(
-                    text = "아직 학습 기록이 없습니다.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = fontColor
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(
+                        text = "아직 학습 기록이 없습니다.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = fontColor
+                    )
+                }
             }
             //학습 기록 리스트
             LazyColumn(
@@ -117,7 +122,7 @@ fun StudyPlanDetailScreen(
                     StudyRecordCard(
                         log = record,
                         onDeleteClick = {
-                            viewModel.deleteStudyLog(record.id)
+                            viewModel.showDeleteDialog(record.id)
                         }
                     )
                 }
@@ -141,7 +146,6 @@ fun StudyPlanDetailScreen(
                     shape = RoundedCornerShape(16.dp)
                 )
             }
-        }
 
             // 제목 변경 다이얼로그
             if (isEditDialogShown) {
@@ -175,6 +179,7 @@ fun StudyPlanDetailScreen(
             }
         }
     }
+}
 
 @Composable
 fun StudyRecordCard(

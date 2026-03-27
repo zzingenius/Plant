@@ -134,12 +134,23 @@ class StudyPlanDetailViewModel(
     }
     fun deleteStudyLog(logId: String){
         if(isInvalidIds(userId, potId, logId)) return
+
+        //삭제 로그 시간 찾기
+        val logToDelete = _studyLogs.value.find { it.id == logId }
+        val timeToSubtract = logToDelete?.studyingTime ?: 0L
+
         viewModelScope.launch {
             db.collection("users").document(userId)
                 .collection("pots").document(potId)
                 .collection("logs").document(logId)
                 .delete()
                 .addOnSuccessListener {
+                    //총 공부시간에서 시간 차감
+                    val decreaseAmount = timeToSubtract * -1
+
+                    // 화분 총 시간, 전체 총 시간 동시 차감
+                    updateGlobalAndPotTotalTime(decreaseAmount)
+
                     // 삭제 후 리스트 새로고침
                     fetchStudyLogs()
                 }
@@ -147,6 +158,37 @@ class StudyPlanDetailViewModel(
                     Log.e("Firestore", "삭제 실패 : ${e.message}")
                 }
         }
+    }
+    private fun updateGlobalAndPotTotalTime(amount: Long) {
+        if (isInvalidIds(userId, potId)) return
+
+        val incrementValue = com.google.firebase.firestore.FieldValue.increment(amount)
+
+        // 전체 총 공부시간
+        val userRef = db.collection("users").document(userId)
+
+        //화분 총 공부시간
+        val potRef = db.collection("users").document(userId)
+            .collection("pots").document(potId)
+
+        // 하나의 트랜잭션으로 묶기
+        val batch = db.batch()
+
+        // 유저 업데이트
+        batch.update(userRef, "totalStudyTime", incrementValue)
+
+        // 화분 업데이트
+        batch.update(potRef, "potTotalStudyingTime", incrementValue)
+
+        batch.commit()
+            .addOnSuccessListener {
+                Log.d("Firestore", "총 시간 업데이트 성공: $amount")
+                // UI 수치 갱신
+                fetchPotDetail()
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "총 시간 업데이트 실패: ${e.message}")
+            }
     }
     fun checkID(logId: String): Boolean{
         return when {
