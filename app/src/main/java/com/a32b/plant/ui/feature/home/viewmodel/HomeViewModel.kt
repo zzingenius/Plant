@@ -16,9 +16,9 @@ import java.time.LocalDateTime
 class HomeViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     // 현재 로그인된 유저 ID
-    //private val currentUid: String get() = CurrentUser.uid
+    private val currentUid: String get() = CurrentUser.uid
     // 테스트용 UID
-    private val currentUid: String = "ARnkLKJE60MuhYMgivXweboI6ch2"
+    //private val currentUid: String = "ARnkLKJE60MuhYMgivXweboI6ch2"
 
     private val _userName = MutableStateFlow("사용자")
     val userName = _userName.asStateFlow()
