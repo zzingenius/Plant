@@ -18,10 +18,12 @@ import com.a32b.plant.data.model.StudyLog
 import com.a32b.plant.ui.theme.background
 import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.ui.theme.fontColor
+import com.a32b.plant.ui.theme.fontColorSub
 import com.a32b.plant.ui.theme.title
 import java.time.ZoneId
 
@@ -40,6 +42,9 @@ fun StudyPlanDetailScreen(
     // 상세 기록 삭제 다이얼로그 상태
     val isDeleteDialogShown by viewModel.isDeleteDialogShown.collectAsState()
 
+    //화분 전체 삭제 상태
+    val isPotDeleteDialogShown by viewModel.isPotDeleteDialogShown.collectAsState()
+
     //임시 텍스트
     var editNameText by remember(isEditDialogShown) {
         mutableStateOf(potInfo?.name?: "")
@@ -56,13 +61,30 @@ fun StudyPlanDetailScreen(
                     } ?: Text("로딩 중...")
                 },
                 navigationIcon = {
-                    //뒤로 가기
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_backbtn),
-                            contentDescription = "뒤로가기",
-                            modifier = Modifier.size(24.dp)
-                        )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        //뒤로 가기
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_backbtn),
+                                contentDescription = "뒤로가기",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        //삭제 버튼
+                        TextButton(
+                            onClick = {viewModel.setPotDeleteDialogShown(true)},
+                            modifier = Modifier.height(20.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("삭제",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = fontColorSub
+                            )
+                        }
                     }
                 },
                 actions = {
@@ -172,6 +194,31 @@ fun StudyPlanDetailScreen(
                     dismissButton = {
                         TextButton(onClick = { viewModel.setEditDialogShown(false) }) {
                             Text("취소", color = Color.Gray)
+                        }
+                    },
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+            // 화분 전체 삭제 다이얼로그
+            if(isPotDeleteDialogShown){
+                AlertDialog(
+                    onDismissRequest = {viewModel.setPotDeleteDialogShown(false)},
+                    title = { Text("화분 삭제")},
+                    text = {Text(" 이 화분과 화분의 \n \"모든 학습 기록\"이 영구 삭제됩니다. \n 정말 삭제하시겠습니까?")},
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.confirmDeleteEntirePot {
+                                    navController.popBackStack()
+                                }
+                            }
+                        ) {
+                            Text("삭제", color = Color.Red, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { viewModel.setPotDeleteDialogShown(false) }) {
+                            Text("취소", color = fontColor)
                         }
                     },
                     shape = RoundedCornerShape(16.dp)

@@ -39,11 +39,11 @@ class StudyPlanDetailViewModel(
     private val _studyLogs = MutableStateFlow<List<StudyLog>>(emptyList())
     val studyLogs = _studyLogs.asStateFlow()
 
-    // 다이얼로그 출력 여부
+    // 이름 수정 다이얼로그 출력 여부
     private val _isEditDialogShown = MutableStateFlow(false)
     val isEditDialogShown = _isEditDialogShown.asStateFlow()
 
-    //다이얼로그 표시/숨김 제어
+    //이름 수정 다이얼로그 표시/숨김 제어
     fun setEditDialogShown(show: Boolean){
         _isEditDialogShown.value = show
     }
@@ -65,11 +65,11 @@ class StudyPlanDetailViewModel(
             }
     }
 
-    // 삭제 확인 다이얼로그 출력 여부
+    // 상세 기록 삭제 확인 다이얼로그 출력 여부
     private val _isDeleteDialogShown = MutableStateFlow(false)
     val isDeleteDialogShown = _isDeleteDialogShown.asStateFlow()
 
-    //삭제 대기 로그 ID
+    //상세 기록 삭제 대기 로그 ID
     private var pendingDeleteLogID : String = ""
 
     fun showDeleteDialog(logId: String){
@@ -82,11 +82,46 @@ class StudyPlanDetailViewModel(
         pendingDeleteLogID = ""
     }
 
-    //최종 삭제
+    //상세 기록 최종 삭제
     fun confirmDelete(){
         if(pendingDeleteLogID.isNotEmpty()){
             deleteStudyLog(pendingDeleteLogID)
             dismissDeleteDialog()
+        }
+    }
+
+    // 화분 전체 삭제 다이얼로그 상태
+    private val _isPotDeleteDialogShown = MutableStateFlow(false)
+    val isPotDeleteDialogShown = _isPotDeleteDialogShown.asStateFlow()
+
+    fun setPotDeleteDialogShown(show: Boolean){
+        _isPotDeleteDialogShown.value = show
+    }
+
+    //화분 전체 삭제
+    fun confirmDeleteEntirePot(onSuccess: () -> Unit){
+        if(isInvalidIds(userId, potId)) return
+
+        val timeToSubtract = _potDetail.value?.potTotalStudyingTime ?: 0L
+
+        viewModelScope.launch {
+            val userRef = db.collection("users").document(userId)
+            val potRef = db.collection("users").document(userId)
+                .collection("pots").document(potId)
+            val batch = db.batch()
+            // 유저 전체 공부 시간 차감
+            batch.update(userRef, "totalStudyTime", com.google.firebase.firestore.FieldValue.increment(timeToSubtract * -1))
+            // 화분 문서 삭제
+            batch.delete(potRef)
+
+            batch.commit()
+                .addOnSuccessListener {
+                    setPotDeleteDialogShown(false)
+                    onSuccess()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firestore", "화분 삭제 실패: ${e.message}")
+                }
         }
     }
 
@@ -194,6 +229,43 @@ class StudyPlanDetailViewModel(
         return when {
             userId.isEmpty() || potId.isEmpty() || logId.isEmpty() -> true
             else -> false
+        }
+    }
+
+    //화분 전체 삭제
+    fun deleteEntriePot(onSuccess: () -> Unit){
+        if(isInvalidIds(userId, potId)) return
+
+        // 삭제 화분의 총 공부시간 저장
+        val timeToSubtract = _potDetail.value?.potTotalStudyingTime ?: 0L
+
+        viewModelScope.launch {
+            // 유저
+            val userRef = db.collection("users").document(userId)
+
+            // 화분
+            val potRef = db.collection("users").document(userId)
+                .collection("pots").document(potId)
+
+            val batch = db.batch()
+
+            //시간 감소
+            batch.update(userRef, "totalStudyTime", com.google.firebase.firestore.FieldValue.increment(timeToSubtract * -1))
+
+            // 화분 삭제
+            batch.delete(potRef)
+
+            batch.commit()
+                .addOnSuccessListener {
+                    onSuccess()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firestore","화분 삭제 실패 : ${e.message}")
+                    // Toast.make
+
+                }
+
+
         }
     }
 }
