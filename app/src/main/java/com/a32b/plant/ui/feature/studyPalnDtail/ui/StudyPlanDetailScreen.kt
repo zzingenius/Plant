@@ -1,5 +1,6 @@
 package com.a32b.plant.ui.feature.studyPalnDtail.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
@@ -50,6 +51,8 @@ fun StudyPlanDetailScreen(
         mutableStateOf(potInfo?.name?: "")
     }
 
+    // 선택한 로그 상태
+    val selectedStudyLog by viewModel.selectedStudyLog.collectAsState()
 
     Scaffold(
         topBar = {
@@ -143,12 +146,21 @@ fun StudyPlanDetailScreen(
                 items(logs) { record ->
                     StudyRecordCard(
                         log = record,
+                        onCardClick = { viewModel.onStudyLogClicked(record)},
                         onDeleteClick = {
                             viewModel.showDeleteDialog(record.id)
                         }
                     )
                 }
             }
+            // 선택 로그 존재 -> 다이얼로그 표출
+            selectedStudyLog?.let { log ->
+                StudyLogDetailDialog(
+                    log = log,
+                    ondismiss = {viewModel.onDismissLogDialog()}
+                )
+            }
+
             // 삭제 확인 다이얼로그
             if (isDeleteDialogShown){
                 AlertDialog(
@@ -231,6 +243,7 @@ fun StudyPlanDetailScreen(
 @Composable
 fun StudyRecordCard(
     log : StudyLog,
+    onCardClick: () -> Unit,
     onDeleteClick: () -> Unit){
     // Timestamp -> LocalDateTime 변환
     val dateTime = log.createAt.toDate().toInstant()
@@ -238,7 +251,8 @@ fun StudyRecordCard(
         .toLocalDateTime()
     Card(
         modifier = Modifier.fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable{ onCardClick()},
         colors = CardDefaults.cardColors(containerColor = background),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(2.dp)
