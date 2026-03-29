@@ -21,34 +21,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.a32b.plant.R
+import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityDetailScreen(
     onBack: () -> Unit,
-    viewModel: CommunityDetailViewModel
+    viewModel: CommunityDetailViewModel,
+    navController: NavController
 ) {
 
     val postState by viewModel.post.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val commentText by viewModel.commentText.collectAsStateWithLifecycle()
-
+    val isLikeProcessing by viewModel.isLikeProcessing.collectAsStateWithLifecycle()
 
     val showDeleteDialog = viewModel.showDeleteDialog.value
-
-    var isEditing by remember { mutableStateOf(false) }
-    var editTitle by remember { mutableStateOf("") }
-    var editContent by remember { mutableStateOf("") }
-
-    LaunchedEffect(postState) {
-        postState?.let {
-            editTitle = it.title
-            editContent = it.content
-        }
-    }
-
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -105,11 +96,7 @@ fun CommunityDetailScreen(
             ) {
                 LazyColumn(modifier = Modifier.padding(20.dp)) {
                     item {
-                        if (isEditing) {
-                            OutlinedTextField(value = editTitle, onValueChange = { editTitle = it }, modifier = Modifier.fillMaxWidth())
-                        } else {
-                            Text(currentPost.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        }
+                        Text(currentPost.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
@@ -125,11 +112,7 @@ fun CommunityDetailScreen(
                     }
 
                     item {
-                        if (isEditing) {
-                            OutlinedTextField(value = editContent, onValueChange = { editContent = it }, modifier = Modifier.fillMaxWidth().height(150.dp))
-                        } else {
-                            Text(currentPost.content, fontSize = 16.sp, lineHeight = 24.sp)
-                        }
+                        Text(currentPost.content, fontSize = 16.sp, lineHeight = 24.sp)
                         Spacer(modifier = Modifier.height(30.dp))
                     }
 
@@ -142,9 +125,13 @@ fun CommunityDetailScreen(
                             Icon(painterResource(id = R.drawable.ic_community_comment), "댓글", tint = Color(0xFF6750A4), modifier = Modifier.size(18.dp))
                             Text(" ${currentPost.comments.size}", modifier = Modifier.padding(end = 12.dp))
                             
-
                             val isLiked = currentPost.likedBy.contains(currentUser?.uid)
-                            IconButton(onClick = { viewModel.toggleLike() }) {
+                            val isAuthor = currentPost.authorUid == currentUser?.uid
+
+                            IconButton(
+                                onClick = { if (!isAuthor && !isLikeProcessing) viewModel.toggleLike() },
+                                enabled = !isAuthor && !isLikeProcessing
+                            ) {
                                 Icon(
                                     imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                     contentDescription = "좋아요",
@@ -156,8 +143,12 @@ fun CommunityDetailScreen(
 
                             Spacer(modifier = Modifier.weight(1f))
 
+
                             if (currentPost.nickName == currentUser?.nickname) {
-                                IconButton(onClick = { isEditing = !isEditing }) {
+                                IconButton(onClick = { 
+
+                                    navController.navigate(Routes.CommunityPost(postId = currentPost.id))
+                                }) {
                                     Icon(painterResource(id = R.drawable.ic_edit), "수정", modifier = Modifier.size(20.dp))
                                 }
                                 IconButton(onClick = { viewModel.openDeleteDialog() }) {
@@ -206,7 +197,6 @@ fun CommentRow(name: String, content: String) {
 @Composable
 fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
     val isEnabled = text.isNotBlank()
-
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
         shape = RoundedCornerShape(12.dp),
@@ -237,13 +227,12 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
                     enabled = isEnabled,
                     modifier = Modifier.height(32.dp).width(64.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isEnabled) Color(0xFF8BC34A) else Color.LightGray,
-                        contentColor = Color.White
+                        containerColor = if (isEnabled) Color(0xFF8BC34A) else Color.LightGray
                     ),
                     shape = RoundedCornerShape(4.dp),
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("등록", fontSize = 12.sp)
+                    Text("등록", fontSize = 12.sp, color = Color.White)
                 }
             }
         }
