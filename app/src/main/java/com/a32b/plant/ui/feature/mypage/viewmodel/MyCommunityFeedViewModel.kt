@@ -30,12 +30,15 @@ class MyCommunityFeedViewModel(private val repository: ActivityRepository) : Vie
 
     fun onSelectedChange(type: String) {
         _uiState.update { it.copy(selected = type) }
-        loadActivity(_uiState.value.selected)
+        loadActivity(type)
     }
 
     fun loadActivity(selected: String){
         //셀렉티드에 맞는 활동 db에서 불러오기
 
+        viewModelScope.launch {
+            _uiState.update { it.copy(activities = repository.getActivityList(selected)) }
+        }
     }
 
     fun moveToCommunityDetail(postId: String){
@@ -43,7 +46,5 @@ class MyCommunityFeedViewModel(private val repository: ActivityRepository) : Vie
             _eventChannel.send(MyCommunityFeedEvent.NavigateToCommunityDetail(postId))
         }
     }
-
-
 
 }

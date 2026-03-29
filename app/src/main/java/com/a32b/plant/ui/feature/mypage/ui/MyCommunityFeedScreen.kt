@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 import com.a32b.plant.R
 import com.a32b.plant.core.component.TagGroup
 import com.a32b.plant.core.navigation.Routes
+import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.data.model.CommunityActivity
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyCommunityFeedEvent
@@ -107,7 +108,7 @@ fun ContentList(lists : List<CommunityActivity>, onClick: (String) -> Unit){
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(list.title, style = Typography.titleSmall)
-                    Text(list.createAt, style = Typography.bodySmall)
+                    Text(TimeFormatter.formatTimestamp(list.createAt), style = Typography.bodySmall)
                 }
                 list.comment?.let {
                     Text(
