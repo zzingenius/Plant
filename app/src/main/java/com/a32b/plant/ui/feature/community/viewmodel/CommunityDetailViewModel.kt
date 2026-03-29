@@ -26,6 +26,10 @@ class CommunityDetailViewModel(
 
     var commentText = MutableStateFlow("")
 
+
+    private val _isLikeProcessing = MutableStateFlow(false)
+    val isLikeProcessing: StateFlow<Boolean> = _isLikeProcessing.asStateFlow()
+
     init { loadPostDetail() }
 
     private fun loadPostDetail() {
@@ -62,6 +66,27 @@ class CommunityDetailViewModel(
                 repository.deletePost(postId)
                 onComplete()
             } catch (e: Exception) { e.printStackTrace() }
+        }
+    }
+
+    fun toggleLike() {
+        val currentPost = _post.value ?: return
+        val user = currentUser.value ?: return
+
+        if (currentPost.authorUid == user.uid) return
+
+        if (_isLikeProcessing.value) return
+
+        viewModelScope.launch {
+            _isLikeProcessing.value = true
+            try {
+                val isAlreadyLiked = currentPost.likedBy.contains(user.uid)
+                repository.toggleLike(postId, user.uid, isAlreadyLiked)
+            } catch (e: Exception) { 
+                e.printStackTrace() 
+            } finally {
+                _isLikeProcessing.value = false
+            }
         }
     }
 }

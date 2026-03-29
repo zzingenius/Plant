@@ -50,11 +50,11 @@ fun CommunityPostScreen(
                     if (title.isBlank() || content.isBlank()) {
                         Toast.makeText(context, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
                     } else {
-                        // 🚀 1. DB에 저장 시도
+
                         viewModel.savePost(title, content, selectedTag) { isSuccess ->
                             if (isSuccess) {
                                 Toast.makeText(context, "성공적으로 등록되었습니다!", Toast.LENGTH_SHORT).show()
-                                // 🚀 2. 성공 시 커뮤니티 목록(CommunityScreen)으로 돌아가기
+
                                 navController.popBackStack()
                             } else {
                                 Toast.makeText(context, "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
@@ -74,7 +74,6 @@ fun CommunityPostScreen(
         ) {
             item { Spacer(modifier = Modifier.height(10.dp)) }
 
-            // 1. 제목 입력 (상단)
             item {
                 Text("제목", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
                 Spacer(modifier = Modifier.height(8.dp))

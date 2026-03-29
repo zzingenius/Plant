@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,8 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.a32b.plant.R
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -142,7 +141,17 @@ fun CommunityDetailScreen(
                         ) {
                             Icon(painterResource(id = R.drawable.ic_community_comment), "댓글", tint = Color(0xFF6750A4), modifier = Modifier.size(18.dp))
                             Text(" ${currentPost.comments.size}", modifier = Modifier.padding(end = 12.dp))
-                            Icon(Icons.Default.FavoriteBorder, "좋아요", tint = Color(0xFF6750A4), modifier = Modifier.size(18.dp))
+                            
+
+                            val isLiked = currentPost.likedBy.contains(currentUser?.uid)
+                            IconButton(onClick = { viewModel.toggleLike() }) {
+                                Icon(
+                                    imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                    contentDescription = "좋아요",
+                                    tint = if (isLiked) Color.Red else Color(0xFF6750A4),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                             Text(" ${currentPost.likeCount}")
 
                             Spacer(modifier = Modifier.weight(1f))
@@ -196,6 +205,8 @@ fun CommentRow(name: String, content: String) {
 
 @Composable
 fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
+    val isEnabled = text.isNotBlank()
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
         shape = RoundedCornerShape(12.dp),
@@ -223,11 +234,16 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 Button(
                     onClick = onSend,
+                    enabled = isEnabled,
                     modifier = Modifier.height(32.dp).width(64.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8BC34A)),
-                    shape = RoundedCornerShape(4.dp)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isEnabled) Color(0xFF8BC34A) else Color.LightGray,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(4.dp),
+                    contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text("등록", fontSize = 12.sp, color = Color.White)
+                    Text("등록", fontSize = 12.sp)
                 }
             }
         }

@@ -81,4 +81,19 @@ class PostRepository(
     suspend fun uploadPost(post: Post) {
         db.collection("posts").add(post).await()
     }
+
+    suspend fun toggleLike(postId: String, uid: String, isAlreadyLiked: Boolean) {
+        val postRef = db.collection("posts").document(postId)
+        if (isAlreadyLiked) {
+            postRef.update(
+                "likedBy", FieldValue.arrayRemove(uid),
+                "likeCount", FieldValue.increment(-1)
+            ).await()
+        } else {
+            postRef.update(
+                "likedBy", FieldValue.arrayUnion(uid),
+                "likeCount", FieldValue.increment(1)
+            ).await()
+        }
+    }
 }
