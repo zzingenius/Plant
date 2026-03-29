@@ -8,6 +8,7 @@ data class Post(
     val title: String = "",
     val nickName: String = "",
     val content: String = "",
+    val tag: String = "", // ✅ 카테고리 태그 필드 추가
     val commentCount: Int = 0,
     val likeCount: Int = 0,
     val isLiked: Boolean = false,

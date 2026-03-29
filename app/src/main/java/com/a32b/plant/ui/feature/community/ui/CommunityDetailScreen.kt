@@ -31,9 +31,13 @@ fun CommunityDetailScreen(
     onBack: () -> Unit,
     viewModel: CommunityDetailViewModel
 ) {
+
     val postState by viewModel.post.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
     val commentText by viewModel.commentText.collectAsStateWithLifecycle()
+
+
+    val showDeleteDialog = viewModel.showDeleteDialog.value
 
     var isEditing by remember { mutableStateOf(false) }
     var editTitle by remember { mutableStateOf("") }
@@ -44,6 +48,32 @@ fun CommunityDetailScreen(
             editTitle = it.title
             editContent = it.content
         }
+    }
+
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.closeDeleteDialog() },
+            title = { Text("게시글 삭제", fontWeight = FontWeight.Bold) },
+            text = { Text("정말로 이 게시글을 삭제하시겠습니까?\n삭제된 내용은 복구할 수 없습니다.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deletePost { onBack() }
+                        viewModel.closeDeleteDialog()
+                    }
+                ) {
+                    Text("삭제", color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.closeDeleteDialog() }) {
+                    Text("취소")
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = Color.White
+        )
     }
 
     Scaffold(
@@ -62,18 +92,6 @@ fun CommunityDetailScreen(
     ) { innerPadding ->
         val currentPost = postState ?: return@Scaffold
 
-
-        val formattedDate = remember(currentPost.createdAt) {
-            try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                val outputFormat = SimpleDateFormat("yyyy년MM월dd일", Locale.KOREA)
-                val date = inputFormat.parse(currentPost.createdAt)
-                date?.let { outputFormat.format(it) } ?: currentPost.createdAt
-            } catch (e: Exception) {
-                currentPost.createdAt
-            }
-        }
-
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -87,29 +105,25 @@ fun CommunityDetailScreen(
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 LazyColumn(modifier = Modifier.padding(20.dp)) {
-
                     item {
                         if (isEditing) {
                             OutlinedTextField(value = editTitle, onValueChange = { editTitle = it }, modifier = Modifier.fillMaxWidth())
                         } else {
-                            Text(currentPost.title, fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth(), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text(currentPost.title, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    item {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE0E0E0)))
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(currentPost.nickName, fontWeight = FontWeight.Medium)
+                            Spacer(modifier = Modifier.weight(1f))
+                            Text(currentPost.createdAt, color = Color.Gray, fontSize = 12.sp)
                         }
                         Spacer(modifier = Modifier.height(20.dp))
                     }
-
-
-                    item {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                            Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.LightGray))
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(currentPost.nickName, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.weight(1f))
-
-                            Text(formattedDate, color = Color.Gray, fontSize = 14.sp)
-                        }
-                        Spacer(modifier = Modifier.height(25.dp))
-                    }
-
 
                     item {
                         if (isEditing) {
@@ -117,9 +131,8 @@ fun CommunityDetailScreen(
                         } else {
                             Text(currentPost.content, fontSize = 16.sp, lineHeight = 24.sp)
                         }
-                        Spacer(modifier = Modifier.height(40.dp))
+                        Spacer(modifier = Modifier.height(30.dp))
                     }
-
 
                     item {
                         HorizontalDivider(color = Color(0xFFEEEEEE))
@@ -135,11 +148,11 @@ fun CommunityDetailScreen(
                             Spacer(modifier = Modifier.weight(1f))
 
                             if (currentPost.nickName == currentUser?.nickname) {
-                                IconButton(onClick = { isEditing = !isEditing }, modifier = Modifier.size(24.dp)) {
-                                    Icon(painterResource(id = R.drawable.ic_edit), "수정")
+                                IconButton(onClick = { isEditing = !isEditing }) {
+                                    Icon(painterResource(id = R.drawable.ic_edit), "수정", modifier = Modifier.size(20.dp))
                                 }
-                                IconButton(onClick = { viewModel.deletePost { onBack() } }, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Default.Delete, "삭제")
+                                IconButton(onClick = { viewModel.openDeleteDialog() }) {
+                                    Icon(Icons.Default.Delete, "삭제", modifier = Modifier.size(20.dp))
                                 }
                             }
                         }
@@ -156,11 +169,10 @@ fun CommunityDetailScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                     }
 
-                    // ✅ 6. 실제 댓글 목록 (DB 데이터 연결)
+
                     items(currentPost.comments) { commentData ->
                         val name = commentData["nickName"] as? String ?: "익명"
                         val content = commentData["content"] as? String ?: ""
-
                         CommentRow(name = name, content = content)
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -173,11 +185,11 @@ fun CommunityDetailScreen(
 @Composable
 fun CommentRow(name: String, content: String) {
     Row(verticalAlignment = Alignment.Top) {
-        Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(Color.LightGray))
+        Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(Color(0xFFEEEEEE)))
         Spacer(Modifier.width(8.dp))
         Column {
-            Text(name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text(content, fontSize = 14.sp, color = Color.Black)
+            Text(name, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text(content, fontSize = 14.sp, color = Color.DarkGray)
         }
     }
 }
@@ -185,21 +197,21 @@ fun CommentRow(name: String, content: String) {
 @Composable
 fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(Color.LightGray))
+                Box(modifier = Modifier.size(18.dp).clip(CircleShape).background(Color.LightGray))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(nickname, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(nickname, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                modifier = Modifier.fillMaxWidth().height(80.dp).padding(top = 8.dp),
-                placeholder = { Text("댓글작성", fontSize = 14.sp, color = Color.LightGray) },
+                modifier = Modifier.fillMaxWidth().height(70.dp).padding(top = 8.dp),
+                placeholder = { Text("댓글 입력...", fontSize = 13.sp) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -211,8 +223,7 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 Button(
                     onClick = onSend,
-                    modifier = Modifier.height(30.dp).width(60.dp).padding(top = 4.dp),
-                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier.height(32.dp).width(64.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8BC34A)),
                     shape = RoundedCornerShape(4.dp)
                 ) {

@@ -43,7 +43,8 @@ class PostRepository(
         }
         val subscription = db.collection("users").document(uid)
             .addSnapshotListener { snapshot, _ ->
-                trySend(snapshot?.toObject(Author::class.java))
+                val author = snapshot?.toObject(Author::class.java)?.copy(uid = uid)
+                trySend(author)
             }
         awaitClose { subscription.remove() }
     }
@@ -57,14 +58,14 @@ class PostRepository(
         awaitClose { subscription.remove() }
     }
 
-    suspend fun addComment(postId: String, nickName: String, content: String) {
+    suspend fun addComment(postId: String, uid: String, nickName: String, content: String) {
         val newComment = hashMapOf(
+            "uid" to uid,
             "nickName" to nickName,
             "content" to content,
             "createdAt" to System.currentTimeMillis()
         )
 
-        // 댓글 추가 및 댓글 수(commentCount) 1 증가
         db.collection("posts").document(postId)
             .update(
                 "comments", FieldValue.arrayUnion(newComment),
