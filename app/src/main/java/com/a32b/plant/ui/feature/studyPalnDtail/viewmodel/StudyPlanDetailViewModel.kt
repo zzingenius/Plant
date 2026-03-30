@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.toRoute
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.data.model.PotInfo
@@ -20,6 +21,7 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
@@ -323,6 +325,30 @@ class StudyPlanDetailViewModel(
                 .addOnFailureListener { e ->
                     Log.e("Firestore", "학습 완료 처리 실패 : ${e.message}")
                 }
+        }
+    }
+
+    //공유 기능 체크박스
+    //전체 선택 상태
+//    val isAllSelected = _studyLogs.map { logs ->
+//        logs.isNotEmpty() && logs.all { it.isSelected }
+//    }.asStateFlow(viewModelScope, false)
+
+    //각 항목 체크박스 상태로 변경
+    fun onLogSelectionChanged(logId: String, isSelected: Boolean){
+        _studyLogs.value = _studyLogs.value.map { log ->
+            if(log.id == logId){
+                log.copy(isSelected = isSelected)
+            } else {
+                log
+            }
+        }
+    }
+
+    //전체 선택 체그박스 상태 변경
+    fun onAllSelectionChanged(isSelected: Boolean){
+        _studyLogs.value = _studyLogs.value.map { log ->
+            log.copy(isSelected = isSelected)
         }
     }
 }
