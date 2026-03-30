@@ -7,7 +7,6 @@ import com.a32b.plant.data.di.CurrentUser
 import com.a32b.plant.data.model.CommunityActivity
 import com.a32b.plant.data.model.Post
 import com.a32b.plant.data.model.PostAuthor
-import com.a32b.plant.data.repository.ActivityRepository
 import com.a32b.plant.data.repository.PostRepository
 import com.a32b.plant.data.repository.PotRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,9 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 data class CommunityPostUiState(
     val postId: String? = null,
@@ -27,8 +23,9 @@ data class CommunityPostUiState(
     val potId: String? = null,
     val studyLogs: List<String>? = null
 )
-class CommunityPostViewModel(private val repository: PostRepository, private val activityRepository: ActivityRepository,
-                             private val postId: String?, private val potId: String?, private val studyLogs: List<String>?) : ViewModel() {
+class CommunityPostViewModel(private val repository: PostRepository, private val activityRepository: PotRepository,
+                             private val postId: String?, private val potId: String?, private val studyLogs: List<String>?
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CommunityPostUiState())
     val uiState = _uiState.asStateFlow()
