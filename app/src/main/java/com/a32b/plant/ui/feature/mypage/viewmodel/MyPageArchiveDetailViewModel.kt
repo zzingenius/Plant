@@ -1,11 +1,8 @@
 package com.a32b.plant.ui.feature.mypage.viewmodel
 
 import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.core.util.TimeFormatter.formatToDigitalClock
 import com.a32b.plant.data.di.CurrentUser
 import com.a32b.plant.data.model.PotInfo
@@ -23,9 +20,10 @@ data class MyPageArchiveDetailStatus(
     val totalStudyTime: String = "00 : 00 : 00"
 )
 
+
 class MyPageArchiveDetailViewModel(
     private val potRepository: PotRepository,
-    val potId: String
+    private val potId: String?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MyPageArchiveDetailStatus())

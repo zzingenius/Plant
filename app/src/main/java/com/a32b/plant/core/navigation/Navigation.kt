@@ -40,17 +40,8 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
             composable<Routes.Mypage> { MyPageScreen(navController) }
             composable<Routes.MyPageSetting> { MyPageSettingScreen(navController) }
             composable<Routes.MyPageArchive> { MyPageArchiveScreen(navController) }
+            composable<Routes.MyPageArchiveDetail> { MyPageArchiveDetailScreen(navController) }
 
-            composable<Routes.MyPageArchiveDetail> {backStackEntry->
-                val route = backStackEntry.toRoute<Routes.MyPageArchiveDetail>()
-                val detailVm: MyPageArchiveDetailViewModel = viewModel(
-                    factory = ViewModelFactory.myPageArchiveDetailViewModelFactory(route.potId)
-                )
-                MyPageArchiveDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    viewModel = detailVm
-                )
-            }
 
             composable<Routes.CommunityList> {
                 CommunityListScreen(navController)
