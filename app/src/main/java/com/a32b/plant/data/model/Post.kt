@@ -43,7 +43,7 @@ data class Comment(
     val user: CommentUser = CommentUser(),      // ERD: user { id, nickname, profileImg }
     val content: String = "",
     val activityId: String = "",
-    val createdAt: Timestamp? = null
+    val createdAt: Timestamp? = Timestamp.now()
 )
 
 data class PostLike(

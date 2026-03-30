@@ -81,7 +81,7 @@ fun MyCommunityFeedScreen(navController: NavController) {
             }
             ContentList(uiState.activities){ targetId ->
                 Log.d("타겟 아이디", targetId)
-//                viewModel.moveToCommunityDetail(targetId)
+                viewModel.moveToCommunityDetail(targetId)
 
             }
         }
