@@ -121,7 +121,7 @@ fun StudyPlanDetailScreen(
         }
     ) { innerPadding ->
         // 학습 기록 리스트 영역
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             //학습 기록 없을 시
             if (logs.isEmpty()) {
                 Box(
@@ -134,23 +134,24 @@ fun StudyPlanDetailScreen(
                         color = fontColor
                     )
                 }
-            }
-            //학습 기록 리스트
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(logs) { record ->
-                    StudyRecordCard(
-                        log = record,
-                        onCardClick = { viewModel.onStudyLogClicked(record)},
-                        onDeleteClick = {
-                            viewModel.showDeleteDialog(record.id)
-                        }
-                    )
+            } else {
+                //학습 기록 리스트
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(logs) { record ->
+                        StudyRecordCard(
+                            log = record,
+                            onCardClick = { viewModel.onStudyLogClicked(record)},
+                            onDeleteClick = {
+                                viewModel.showDeleteDialog(record.id)
+                            }
+                        )
+                    }
                 }
             }
             // 선택 로그 존재 -> 다이얼로그 표출
@@ -253,7 +254,7 @@ fun StudyRecordCard(
         modifier = Modifier.fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable{ onCardClick()},
-        colors = CardDefaults.cardColors(containerColor = background),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
