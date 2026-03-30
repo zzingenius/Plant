@@ -10,6 +10,7 @@ import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
 import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 //import com.a32b.plant.ui.feature.home.viewmodel.HomeViewModel
 import com.a32b.plant.ui.feature.home.viewmodel.NewBornTreeViewModel
+import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageArchiveDetailViewModel
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageArchiveViewModel
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageSettingViewModel
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageViewModel
@@ -65,9 +66,16 @@ object ViewModelFactory {
     }
     val myPageArchiveViewModelFactory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MyPageArchiveViewModel(AppContainer.userRepository) as T
+            return MyPageArchiveViewModel(AppContainer.potRepository) as T
         }
     }
+
+    fun myPageArchiveDetailViewModelFactory(potId: String) = object : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return MyPageArchiveDetailViewModel(AppContainer.potRepository, potId  ) as T
+        }
+    }
+
     val communityListViewModelFactory = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return CommunityListViewModel(AppContainer.postRepository) as T
