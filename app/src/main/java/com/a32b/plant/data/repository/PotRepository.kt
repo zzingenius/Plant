@@ -1,9 +1,7 @@
 package com.a32b.plant.data.repository
 
 import android.util.Log
-import coil.util.CoilUtils.result
 import com.a32b.plant.data.di.CurrentUser
-import com.a32b.plant.data.di.CurrentUser.uid
 import com.a32b.plant.data.model.StudyLog
 import com.a32b.plant.data.model.PotInfo
 import com.google.firebase.firestore.FieldValue
@@ -14,7 +12,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
-import kotlin.text.get
 
 class PotRepository(private val db: FirebaseFirestore) {
 
@@ -145,7 +142,8 @@ class PotRepository(private val db: FirebaseFirestore) {
         return result.toObjects(PotInfo::class.java)
     }
 
-    suspend fun getPotById(id: String): PotInfo? {
+    suspend fun getPotById(id: String?): PotInfo? {
+        if (id == null) return null
         val result = db.collection("pots").document(id).get().await()
         return result.toObject(PotInfo::class.java)
     }

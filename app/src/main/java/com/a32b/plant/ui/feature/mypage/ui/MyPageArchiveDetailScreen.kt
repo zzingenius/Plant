@@ -1,22 +1,23 @@
 package com.a32b.plant.ui.feature.mypage.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.a32b.plant.ui.feature.mypage.viewmodel.MyPageArchiveDetailViewModel
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.toRoute
+import com.a32b.plant.R
 import com.a32b.plant.core.component.ProfileImage
+import com.a32b.plant.core.navigation.Routes
+import com.a32b.plant.data.di.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -27,17 +28,21 @@ import java.util.Locale
 // 종료일 : 2026년 3월 00일
 // 총 공부 시간 152: 25: 21
 // 학습 logs
+
+
 @Composable
-fun MyPageArchiveDetailScreen(
-    onBack: () -> Unit,
-    viewModel: MyPageArchiveDetailViewModel
-) {
+fun MyPageArchiveDetailScreen(navController: NavController) {
+    val args = navController.currentBackStackEntry?.toRoute<Routes.MyPageArchiveDetail>()
+    val potId = args?.potId
+
+    val viewModel: MyPageArchiveDetailViewModel =
+        viewModel(factory = ViewModelFactory.myPageArchiveDetailViewModelFactory(potId))
     val uiState by viewModel.uiState.collectAsState()
     val pot = uiState.pot
 
+
     Scaffold(
         topBar = {
-            // 💡 리스트 화면처럼 Row를 써서 상단바 직접 만들기 (경고 없음!)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -46,13 +51,15 @@ fun MyPageArchiveDetailScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // 뒤로가기 버튼
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
-                }
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_backbtn),
+                    contentDescription = "뒤로가기",
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.Unspecified
+                )
 
-                // 제목 (중앙 정렬을 위해 Spacer 활용)
                 Text(
-                    text = "[${pot?.tag ?: "태그"}] ${pot?.name ?: "로딩 중..."}",
+                    text = "[${pot?.tag ?: "태그"}] ",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 8.dp)
                 )
@@ -67,7 +74,6 @@ fun MyPageArchiveDetailScreen(
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // ... (이전과 동일한 이미지 및 시간 데이터 배치 코드) ...
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     ProfileImage(
                         level = pot.level,
@@ -75,8 +81,24 @@ fun MyPageArchiveDetailScreen(
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(text = "시작일 : ${pot.createdAt?.toDate()?.let { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it) } ?: ""}")
-                        Text(text = "종료일 : ${pot.completedAt?.toDate()?.let { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(it) } ?: ""}")
+                        Text(
+                            text = "시작일 : ${
+                                pot.createdAt?.toDate()?.let {
+                                    SimpleDateFormat(
+                                        "yyyy-MM-dd",
+                                        Locale.KOREA
+                                    ).format(it)
+                                } ?: ""
+                            }")
+                        Text(
+                            text = "종료일 : ${
+                                pot.completedAt?.toDate()?.let {
+                                    SimpleDateFormat(
+                                        "yyyy-MM-dd",
+                                        Locale.KOREA
+                                    ).format(it)
+                                } ?: ""
+                            }")
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "총 공부 시간 : ${uiState.totalStudyTime}",
