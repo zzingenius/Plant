@@ -46,6 +46,8 @@ fun StudyPlanDetailScreen(
     //화분 전체 삭제 상태
     val isPotDeleteDialogShown by viewModel.isPotDeleteDialogShown.collectAsState()
 
+    val isCompleteDialogShown by viewModel.isCompleteDialogShown.collectAsState()
+
     //임시 텍스트
     var editNameText by remember(isEditDialogShown) {
         mutableStateOf(potInfo?.name?: "")
@@ -114,9 +116,10 @@ fun StudyPlanDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                onClick = { /* 다이얼로그 노출 로직 */ }
+                enabled = potInfo?.isCompleted == false,
+                onClick = { viewModel.setCompleteDialogShown(true)}
             ) {
-                Text("학습 완료하기")
+                Text(if(potInfo?.isCompleted == true)"완료된 학습" else "학습 완료하기")
             }
         }
     ) { innerPadding ->
@@ -232,6 +235,37 @@ fun StudyPlanDetailScreen(
                     dismissButton = {
                         TextButton(onClick = { viewModel.setPotDeleteDialogShown(false) }) {
                             Text("취소", color = fontColor)
+                        }
+                    },
+                    shape = RoundedCornerShape(16.dp)
+                )
+            }
+
+            // 학습 완료 확인 다이얼로그
+            if(isCompleteDialogShown){
+                AlertDialog(
+                    onDismissRequest = {viewModel.setCompleteDialogShown(false)},
+                    title = {Text("학습완료")},
+                    text = {Text("이 화분의 학습을 최종 완료 하시겠습니까? \n" +
+                            "완료 후에는 마이페이지의 \"기른 나무\"에서 확인 가능합니다.")},
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.completeStudyPlan {
+                                    navController.popBackStack()
+                                }
+                            }
+                        ) {
+                            Text("완료", fontWeight = FontWeight.Bold, color = fontColor)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.setCompleteDialogShown(false)
+                            }
+                        ) {
+                            Text("취소", color = fontColorSub)
                         }
                     },
                     shape = RoundedCornerShape(16.dp)
