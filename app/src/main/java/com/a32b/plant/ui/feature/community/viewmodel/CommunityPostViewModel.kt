@@ -2,9 +2,12 @@ package com.a32b.plant.ui.feature.community.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.a32b.plant.core.util.ActivityType
 import com.a32b.plant.data.di.CurrentUser
+import com.a32b.plant.data.model.CommunityActivity
 import com.a32b.plant.data.model.Post
 import com.a32b.plant.data.model.PostAuthor
+import com.a32b.plant.data.repository.ActivityRepository
 import com.a32b.plant.data.repository.PostRepository
 import com.a32b.plant.data.repository.PotRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +27,7 @@ data class CommunityPostUiState(
     val potId: String? = null,
     val studyLogs: List<String>? = null
 )
-class CommunityPostViewModel(private val repository: PostRepository, private val potRepository: PotRepository,
+class CommunityPostViewModel(private val repository: PostRepository, private val activityRepository: ActivityRepository,
                              private val postId: String?, private val potId: String?, private val studyLogs: List<String>?) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CommunityPostUiState())
@@ -34,7 +37,7 @@ class CommunityPostViewModel(private val repository: PostRepository, private val
     // ✅ 기존 글을 불러오는 함수
     fun getPost(postId: String) {
         viewModelScope.launch {
-            repository.getPost(postId).firstOrNull()?.let { post ->
+            repository.getPostDetail(postId).firstOrNull()?.let { post ->
                 _uiState.update { it.copy(postId = post.postId,title = post.title, content = post.content, selected = post.tag) }
             }
         }
@@ -65,7 +68,7 @@ class CommunityPostViewModel(private val repository: PostRepository, private val
                         content = _uiState.value.content,
                         tag = _uiState.value.selected
                     )
-                    repository.uploadPost(newPost)
+                    repository.savePost(newPost, CommunityActivity(type = ActivityType.POST, title = _uiState.value.title))
                 }
                 onComplete(true)
             } catch (e: Exception) {

@@ -14,12 +14,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-class PostRepository(
-    private val db: FirebaseFirestore
-) {
+class PostRepository(private val db: FirebaseFirestore) {
 
     //글 목록 조회
-    fun getPosts(): Flow<List<Post>> = callbackFlow {
+    fun getPostList(): Flow<List<Post>> = callbackFlow {
         val subscription = db.collection("posts")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -41,8 +39,8 @@ class PostRepository(
         awaitClose { subscription.remove() }
     }
 
-    //상세 조회??
-    fun getPost(postId: String): Flow<Post?> = callbackFlow {
+    //상세 조회
+    fun getPostDetail(postId: String): Flow<Post?> = callbackFlow {
         val subscription = db.collection("posts").document(postId)
             .addSnapshotListener { snapshot, _ ->
                 val post = snapshot?.toObject(Post::class.java)?.copy(postId = snapshot.id)
@@ -84,9 +82,9 @@ class PostRepository(
         db.collection("posts").document(postId).delete().await()
     }
 
-    suspend fun uploadPost(post: Post) {
-        db.collection("posts").add(post).await()
-    }
+//    suspend fun uploadPost(post: Post) {
+//        db.collection("posts").add(post).await()
+//    }
 
     suspend fun updatePost(postId: String, title: String, content: String, tag: List<String>) {
         db.collection("posts").document(postId)

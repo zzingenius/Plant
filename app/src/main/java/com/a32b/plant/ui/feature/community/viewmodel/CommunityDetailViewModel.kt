@@ -31,7 +31,7 @@ class CommunityDetailViewModel(
     init { loadPostDetail() }
 
     private fun loadPostDetail() {
-        repository.getPost(postId).onEach { _post.value = it }.launchIn(viewModelScope)
+        repository.getPostDetail(postId).onEach { _post.value = it }.launchIn(viewModelScope)
     }
 
     fun onCommentChange(newText: String) { commentText.value = newText }

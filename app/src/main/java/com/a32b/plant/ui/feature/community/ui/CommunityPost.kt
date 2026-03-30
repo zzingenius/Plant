@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.toRoute
+import com.a32b.plant.core.component.TagGroup
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
@@ -90,20 +91,24 @@ fun CommunityPostScreen(
             item { Spacer(modifier = Modifier.height(10.dp)) }
 
             item {
-                Text("제목", style = Typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("제목", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 PostInputField(
                     value = uiState.title,
                     onValueChange = { viewModel.onTitleChange(it) },
                     placeholder = "제목을 입력하세요",
-                    singleLine = true
+                    singleLine = true,
+
                 )
             }
 
             item {
                 Text("카테고리", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-//                TagSelector(tags, selectedTag) { selectedTag = it }
+                TagGroup(tags){ selected ->
+                    viewModel.onSelectedTagChange(selected)
+
+                }
             }
 
             item {
@@ -127,7 +132,7 @@ fun CommunityPostScreen(
 @Composable
 fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: () -> Unit) {
     CenterAlignedTopAppBar(
-        title = { Text(if (isEditMode) "글 수정" else "글쓰기", fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+        title = { Text(if (isEditMode) "글 수정" else "글쓰기", style = Typography.titleLarge) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.DarkGray)
@@ -154,29 +159,6 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
     )
 }
 
-@Composable
-fun TagSelector(tags: List<String>, selectedTag: String, onTagSelected: (String) -> Unit) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(tags) { tag ->
-            val isSelected = tag == selectedTag
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (isSelected) Color(0xFFC5E1A5) else Color.White)
-                    .border(1.dp, if (isSelected) Color(0xFF9CCC65) else Color(0xFFE0E0E0), RoundedCornerShape(20.dp))
-                    .clickable { onTagSelected(tag) }
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-            ) {
-                Text(
-                    text = tag,
-                    fontSize = 12.sp,
-                    color = if (isSelected) Color(0xFF33691E) else Color.Gray,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun PostInputField(
@@ -189,7 +171,7 @@ fun PostInputField(
     TextField(
         value = value,
         onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.LightGray, fontSize = 14.sp) },
+        placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
         modifier = modifier.fillMaxWidth(),
         singleLine = singleLine,
         colors = TextFieldDefaults.colors(
@@ -198,6 +180,7 @@ fun PostInputField(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        textStyle = Typography.bodyMedium
     )
 }
