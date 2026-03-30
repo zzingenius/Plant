@@ -1,20 +1,15 @@
 package com.a32b.plant.ui.feature.community.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -65,12 +60,13 @@ fun CommunityPostScreen(
                 onRegisterClick = {
                     if (uiState.title.isBlank() || uiState.content.isBlank()) {
                         Toast.makeText(context, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
-                    } else {
+                    } else if(uiState.selected.isEmpty()){
+                        Toast.makeText(context, "태그를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                    } else{
                         viewModel.savePost() { isSuccess ->
                             if (isSuccess) {
                                 val msg = if (postId != null) "수정되었습니다!" else "성공적으로 등록되었습니다!"
                                 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                //⭐등록 완료 시 해당 게시물 디테일로 넘어가기
                                 navController.popBackStack()
                             } else {
                                 Toast.makeText(context, "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()

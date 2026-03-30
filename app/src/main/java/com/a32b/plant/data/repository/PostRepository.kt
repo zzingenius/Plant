@@ -82,7 +82,7 @@ class PostRepository(private val db: FirebaseFirestore) {
         val activityRef = db.collection("activities").document()
 
         val commentWithAct = comment.copy(activityId = activityRef.id)
-        val activityWithCo = activity.copy(targetId = commentRef.id)
+        val activityWithCo = activity.copy(targetId = postId, commentId = commentRef.id)
 
         db.runBatch { batch ->
             batch.set(commentRef, commentWithAct)
@@ -102,8 +102,9 @@ class PostRepository(private val db: FirebaseFirestore) {
     }
 
     suspend fun deletePost(postId: String) {
+        val activityId = getActivityId(postId)
         db.collection("posts").document(postId).delete().await()
-        db.collection("activities").document(getActivityId(postId)).delete().await()
+        db.collection("activities").document(activityId).delete().await()
     }
 
     suspend fun updatePost(postId: String, title: String, content: String, tag: List<String>) {
