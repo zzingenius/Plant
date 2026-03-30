@@ -47,11 +47,7 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
                 CommunityListScreen(navController)
             }
 
-            composable<Routes.CommunityPost> { backStackEntry ->
-
-                val route = backStackEntry.toRoute<Routes.CommunityPost>()
-                CommunityPostScreen(navController, postId = route.postId)
-            }
+            composable<Routes.CommunityPost> { CommunityPostScreen(navController) }
 
 
             composable<Routes.CommunityDetail> { backStackEntry ->

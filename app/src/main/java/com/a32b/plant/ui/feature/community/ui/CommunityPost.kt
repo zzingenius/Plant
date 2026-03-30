@@ -22,55 +22,56 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.toRoute
+import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityPostViewModel
+import com.a32b.plant.ui.theme.Typography
+import com.a32b.plant.ui.theme.background
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommunityPostScreen(
-    navController: NavController,
-    postId: String? = null
-) {
+fun CommunityPostScreen(navController: NavController) {
     val context = LocalContext.current
+    val args = navController.currentBackStackEntry?.toRoute<Routes.CommunityPost>()
+    val postId = args?.postId
+    val potId = args?.potId
+    val studyLog = args?.studyLogId
     val viewModel: CommunityPostViewModel = viewModel(
         factory = ViewModelFactory.communityPostViewModelFactory
     )
 
-    var title by remember { mutableStateOf("") }
-    var content by remember { mutableStateOf("") }
-    var selectedTag by remember { mutableStateOf("고등학생") }
-    val tags = listOf("중학생", "고등학생", "취준", "자격증", "취미", "자랑", "공유")
+    val uiState by viewModel.uiState.collectAsState()
+
+    val tags = listOf("중학생", "고등학생", "대학생","취준", "자격증")
 
 
-    LaunchedEffect(postId) {
-        if (postId != null) {
-            viewModel.getPost(postId) { post ->
-                title = post.title
-                content = post.content
-                selectedTag = post.tag
-            }
-        }
+    LaunchedEffect(postId, potId) {
+        postId?.let { viewModel.getPost(postId) }
+        potId?.let { viewModel.getStudyLog(potId) }
     }
 
     Scaffold(
-        containerColor = Color(0xFFFDFDF0),
+        containerColor = background,
         topBar = {
             PostTopBar(
                 isEditMode = postId != null,
-                onBackClick = { navController.popBackStack() },
+                onBackClick = {
+                    //⭐백버튼 클릭 시 정말 종료하겠냐는 다이얼로그 띄우기
+                },
                 onRegisterClick = {
-                    if (title.isBlank() || content.isBlank()) {
+                    if (uiState.title.isBlank() || uiState.content.isBlank()) {
                         Toast.makeText(context, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
                     } else {
-                        viewModel.savePost(postId, title, content, selectedTag) { isSuccess ->
-                            if (isSuccess) {
-                                val msg = if (postId != null) "수정되었습니다!" else "성공적으로 등록되었습니다!"
-                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                                navController.popBackStack()
-                            } else {
-                                Toast.makeText(context, "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+//                        viewModel.savePost(postId, uiState.title, uiState.content, uiState.selected) { isSuccess ->
+//                            if (isSuccess) {
+//                                val msg = if (postId != null) "수정되었습니다!" else "성공적으로 등록되었습니다!"
+//                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+//                                //⭐등록 완료 시 해당 게시물 디테일로 넘어가기
+//                                navController.popBackStack()
+//                            } else {
+//                                Toast.makeText(context, "등록에 실패했습니다.", Toast.LENGTH_SHORT).show()
+//                            }
+//                        }
                     }
                 }
             )
@@ -86,28 +87,28 @@ fun CommunityPostScreen(
             item { Spacer(modifier = Modifier.height(10.dp)) }
 
             item {
-                Text("제목", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Text("제목", style = Typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 PostInputField(
-                    value = title,
-                    onValueChange = { title = it },
+                    value = uiState.title,
+                    onValueChange = { viewModel.onTitleChange(it) },
                     placeholder = "제목을 입력하세요",
                     singleLine = true
                 )
             }
 
             item {
-                Text("카테고리", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Text("카테고리", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                TagSelector(tags, selectedTag) { selectedTag = it }
+//                TagSelector(tags, selectedTag) { selectedTag = it }
             }
 
             item {
-                Text("본문", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                Text("본문", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 PostInputField(
-                    value = content,
-                    onValueChange = { content = it },
+                    value = uiState.content,
+                    onValueChange = { viewModel.onContentChange(it) },
                     placeholder = "나누고 싶은 이야기를 적어주세요.\n\n※ 비방이나 욕설은 제재 대상이 될 수 있습니다.",
                     modifier = Modifier.heightIn(min = 400.dp)
                 )
