@@ -9,7 +9,7 @@ data class Post(
     val nickName: String = "",
     val authorUid: String = "",
     val content: String = "",
-    val tag: String = "",
+    val tag: List<String> = emptyList(),
     val commentCount: Int = 0,
     val likeCount: Int = 0,
     val likedBy: List<String> = emptyList(),

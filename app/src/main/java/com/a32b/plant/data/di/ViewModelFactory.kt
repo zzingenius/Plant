@@ -125,10 +125,9 @@ object ViewModelFactory {
         }
     }
 
-    val communityPostViewModelFactory = object : ViewModelProvider.Factory {
+    fun communityPostViewModelFactory(postId: String?, potId: String?, studyLogs : List<String>?) = object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-
-            return CommunityPostViewModel(AppContainer.postRepository) as T
+            return CommunityPostViewModel(AppContainer.postRepository, AppContainer.potRepository, postId, potId, studyLogs ) as T
         }
     }
 

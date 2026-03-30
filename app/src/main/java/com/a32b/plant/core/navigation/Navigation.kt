@@ -43,9 +43,7 @@ fun PlantAppNavigation(navController: NavHostController, viewModel: SplashViewMo
                 CommunityListScreen(navController)
             }
 
-            composable<Routes.CommunityPost> {
-                CommunityPostScreen(navController)
-            }
+            composable<Routes.CommunityPost> { CommunityPostScreen(navController) }
 
             composable<Routes.CommunityDetail> { 
                 CommunityDetailScreen(navController) 
