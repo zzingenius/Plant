@@ -15,6 +15,8 @@ data class PotInfo(
     @ServerTimestamp
     val createdAt: Timestamp? = null,
     val completedAt: Timestamp? = null,
+    @get:PropertyName("isCompleted")
+    @set:PropertyName("isCompleted")
     var isCompleted: Boolean = false
 ){
     //레벨 업 계산

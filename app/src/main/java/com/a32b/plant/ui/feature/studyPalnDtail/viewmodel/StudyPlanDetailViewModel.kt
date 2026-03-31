@@ -6,6 +6,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NoOpNavigator
 import androidx.navigation.toRoute
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.data.model.PotInfo
@@ -329,26 +331,38 @@ class StudyPlanDetailViewModel(
     }
 
     //공유 기능 체크박스
-    //전체 선택 상태
-//    val isAllSelected = _studyLogs.map { logs ->
-//        logs.isNotEmpty() && logs.all { it.isSelected }
-//    }.asStateFlow(viewModelScope, false)
+    //전체 선택 체크
+    val isAllSelected: Boolean
+        get() = _studyLogs.value.isNotEmpty() && _studyLogs.value.all { it.isSelected }
 
     //각 항목 체크박스 상태로 변경
     fun onLogSelectionChanged(logId: String, isSelected: Boolean){
-        _studyLogs.value = _studyLogs.value.map { log ->
-            if(log.id == logId){
-                log.copy(isSelected = isSelected)
-            } else {
-                log
-            }
+        _studyLogs.value = _studyLogs.value.map {
+            if(it.id == logId){
+                it.copy(isSelected = isSelected)
+            } else it
         }
     }
 
-    //전체 선택 체그박스 상태 변경
-    fun onAllSelectionChanged(isSelected: Boolean){
-        _studyLogs.value = _studyLogs.value.map { log ->
-            log.copy(isSelected = isSelected)
+    //전체 선택/해제
+    fun toggleAllSelection(selected: Boolean){
+        _studyLogs.value = _studyLogs.value.map{it.copy(isSelected = selected)}
+    }
+
+    fun navigateToCommunityShare(navController: NavController){
+        val selectedIds = _studyLogs.value.filter { it.isSelected }.map { it.id }
+        val pot = _potDetail.value?: return
+
+        if(selectedIds.isNotEmpty()){
+            navController.navigate(
+                Routes.CommunityPost(
+                    potId = pot.id,
+                    tag = pot.tag,
+                    title = pot.name,
+                    studyLogIds = selectedIds
+                )
+            )
         }
     }
+    private fun inInvalidIds(vararg ids: String?): Boolean = ids.any{it.isNullOrEmpty()}
 }
