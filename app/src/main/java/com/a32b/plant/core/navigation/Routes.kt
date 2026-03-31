@@ -24,4 +24,6 @@ sealed interface Routes {
     @Serializable data class CommunityDetail(val postId: String) : Routes
     @Serializable data class StudyCompletedDetail(val potId: String): Routes
     @Serializable data class MyPageArchiveDetail(val potId: String): Routes
+
+
 }

@@ -40,7 +40,7 @@ class UserRepository(private val db: FirebaseFirestore, private val auth: Fireba
         }
 
         // 2. 화분 목록 실시간 리스너 (화분 추가/삭제 시에도 UI 즉시 반영)
-        val potsListener = potsCollectionRef.whereEqualTo("completed", false)
+        val potsListener = potsCollectionRef.whereEqualTo("isCompleted", false)
             .addSnapshotListener{ potsSnapshot, _ ->
             currentOngoingPots = potsSnapshot?.documents?.mapNotNull{ doc ->
                 doc.toObject(PotInfo::class.java)?.copy(id = doc.id)
