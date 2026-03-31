@@ -1,6 +1,7 @@
 package com.a32b.plant.data.repository
 
 import android.util.Log
+import com.a32b.plant.core.util.ActivityType
 import com.a32b.plant.data.di.AppContainer.firestore
 import com.a32b.plant.data.di.CurrentUser
 import com.a32b.plant.data.model.Comment
@@ -120,6 +121,13 @@ class PostRepository(private val db: FirebaseFirestore) {
             .collection("comments").document(commentId)
             .update("content", newContent)
             .await()
+
+        db.collection("activities").whereEqualTo("commentId", commentId)
+                .get()
+                .await()
+                .documents
+                .firstOrNull()?.reference?.update("comment", newContent)?.await()
+
     }
 
     // 댓글 삭제 함수 (activity도 함께 삭제 + commentCount 감소)
@@ -185,19 +193,45 @@ class PostRepository(private val db: FirebaseFirestore) {
             .await()
     }
 
-    suspend fun toggleLike(postId: String, uid: String, isAlreadyLiked: Boolean) {
+    suspend fun toggleLike(postId: String, uid: String, isAlreadyLiked: Boolean, title: String) {
         val postRef = db.collection("posts").document(postId)
         if (isAlreadyLiked) {
             postRef.update(
                 "likedBy", FieldValue.arrayRemove(uid),
                 "likeCount", FieldValue.increment(-1)
             ).await()
+            deleteLikedActivity(postId)
         } else {
             postRef.update(
                 "likedBy", FieldValue.arrayUnion(uid),
                 "likeCount", FieldValue.increment(1)
             ).await()
+            setLikedActivity(postId, title)
         }
+    }
+
+    suspend fun setLikedActivity(postId: String, title: String){
+        val data = CommunityActivity(type = ActivityType.LIKE, title = title, targetId = postId)
+        db.collection("activities")
+            .add(data)
+            .await()
+    }
+    suspend fun deleteLikedActivity(postId: String){
+        val docId = db.collection("activities")
+            .whereEqualTo("targetId", postId)
+            .whereEqualTo("type", ActivityType.LIKE)
+            .get()
+            .await()
+            .documents
+            .firstOrNull()?.reference?.id
+        docId?.let {
+            db.collection("activities").document(docId)
+                .delete()
+                .await()
+        }
+
+
+
     }
     suspend fun uploadPostAndReturnId(post: Post): String {
         return db.collection("posts").add(post).await().id

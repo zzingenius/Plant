@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import com.a32b.plant.R
 import com.a32b.plant.core.component.TagGroup
 import com.a32b.plant.core.navigation.Routes
+import com.a32b.plant.core.util.ActivityType
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.data.model.CommunityActivity
@@ -50,7 +51,7 @@ fun MyCommunityFeedScreen(navController: NavController) {
     val viewModel : MyCommunityFeedViewModel = viewModel(factory = ViewModelFactory.myCommunityFeedViewModelFactory)
 
     val uiState by viewModel.uiState.collectAsState()
-    val list = listOf("내 게시물", "내 댓글", "좋아요")
+    val list = listOf(ActivityType.POST, ActivityType.COMMENT, ActivityType.LIKE)
 
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
