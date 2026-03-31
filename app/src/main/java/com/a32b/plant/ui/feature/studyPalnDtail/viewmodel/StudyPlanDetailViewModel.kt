@@ -312,7 +312,7 @@ class StudyPlanDetailViewModel(
             // 화분 상태 변경
             batch.update(potRef,
                 mapOf(
-                    "completed" to true,
+                    "isCompleted" to true,
                     "completedAt" to FieldValue.serverTimestamp()
                 )
             )
