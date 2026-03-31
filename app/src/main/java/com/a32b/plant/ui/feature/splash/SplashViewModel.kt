@@ -38,6 +38,12 @@ class SplashViewModel : ViewModel() {
                     return@launch
                 }
 
+                // 닉네임 미설정 유저 → 로그인 화면으로 (닉네임 다이얼로그 다시 표시)
+                if (profile.isFirstLogin == true) {
+                    _destination.value = Routes.SignIn
+                    return@launch
+                }
+
                 CurrentUser.set(
                     uid = firebaseUser.uid,
                     nickname = profile?.nickname ?: "",
