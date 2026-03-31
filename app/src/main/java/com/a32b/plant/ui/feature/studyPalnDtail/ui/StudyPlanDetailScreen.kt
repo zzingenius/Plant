@@ -149,13 +149,13 @@ fun StudyPlanDetailScreen(
 
                         Icon(
                             painter = painterResource(id = R.drawable.ic_trash),
-                            contentDescription = "삭제",
+                            contentDescription = "화분 전체 삭제",
                             modifier = Modifier.size(18.dp),
                             tint = fontColorSub
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            "삭제",
+                            "화분 전체 삭제",
                             style = MaterialTheme.typography.labelSmall,
                             color = fontColorSub
                         )
