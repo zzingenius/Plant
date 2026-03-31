@@ -74,5 +74,4 @@ class CommunityListViewModel(private val repository: PostRepository) : ViewModel
     fun onSelectedChanged(tags: List<String>) {
         _uiState.update { it.copy(selected = tags) }
     }
-    fun onLikedChange() = repository.getLiked()
 }

@@ -31,7 +31,8 @@ class PostRepository(private val db: FirebaseFirestore) {
 
                 val posts = snapshot?.documents?.mapNotNull { doc ->
                     try {
-                        doc.toObject(Post::class.java)?.copy(postId = doc.id)
+                        val likedBy = doc.get("likedBy") as? List<*> ?: emptyList<String>()
+                        doc.toObject(Post::class.java)?.copy(postId = doc.id, isLiked = CurrentUser.uid in likedBy)
                     } catch (e: Exception) {
                         Log.e("파싱오류", "문서 ID: ${doc.id}, 데이터: ${doc.data}")
                         null
@@ -47,7 +48,8 @@ class PostRepository(private val db: FirebaseFirestore) {
     fun getPostDetail(postId: String): Flow<Post?> = callbackFlow {
         val subscription = db.collection("posts").document(postId)
             .addSnapshotListener { snapshot, _ ->
-                val post = snapshot?.toObject(Post::class.java)?.copy(postId = snapshot.id)
+                val likedBy = snapshot?.get("likedBy") as? List<*> ?: emptyList<String>()
+                val post = snapshot?.toObject(Post::class.java)?.copy(postId = snapshot.id, isLiked = CurrentUser.uid in likedBy)
                 trySend(post)
             }
         awaitClose { subscription.remove() }
@@ -181,13 +183,6 @@ class PostRepository(private val db: FirebaseFirestore) {
         db.collection("activities").document(getActivityId(postId))
             .update("title", title)
             .await()
-    }
-
-    fun getLiked(): Boolean{
-        db.collection("post")
-        //post/{postId}/liked/{Current.uid}
-        // isLiked 여부를 리턴하는 걸로
-        return false
     }
 
     suspend fun toggleLike(postId: String, uid: String, isAlreadyLiked: Boolean) {

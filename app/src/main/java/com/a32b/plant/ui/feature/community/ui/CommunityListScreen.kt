@@ -34,6 +34,7 @@ import com.a32b.plant.data.model.Post
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityListViewModel
 import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.background
+import com.a32b.plant.ui.theme.primary
 import com.a32b.plant.ui.theme.sub1
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
@@ -89,7 +90,7 @@ fun CommunityListScreen(navController: NavController) {
                     items(postList) { post ->
                         PostCard(
                             post = post,
-                            isLiked = viewModel.onLikedChange(),
+                            isLiked = post.isLiked,
                             onClick = { navController.navigate(Routes.CommunityDetail(postId = post.postId)) }
                         )
                     }
@@ -149,9 +150,9 @@ fun PostCard(post: Post, isLiked: Boolean,onClick: () -> Unit ) {
 
 
                 IconStat(
-                    iconRes = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    iconRes = if (isLiked) R.drawable.ic_community_like_selected else R.drawable.ic_community_like_normal,
                     text = post.likeCount.toString(),
-                    tint = if (isLiked) Color.Red else Color.Black
+                    tint = if (isLiked) primary else Color.Black
                 )
             }
         }

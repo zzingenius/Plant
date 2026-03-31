@@ -154,7 +154,7 @@ fun CommunityDetailScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
                         ) {
-                            Icon(painterResource(id = R.drawable.ic_community_comment), null, tint = primary, modifier = Modifier.size(18.dp))
+                            Icon(painterResource(id = R.drawable.ic_community_comment), null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                             Text(" ${currentPost.commentCount}", color = Color.Black, modifier = Modifier.padding(end = 16.dp))
 
                             Row(
@@ -162,8 +162,8 @@ fun CommunityDetailScreen(
                                 modifier = Modifier.clickable { viewModel.toggleLike() }
                             ) {
                                 Icon(
-                                    imageVector = if (isLikedByMe) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                    tint = if (isLikedByMe) Color.Red else primary,
+                                    painterResource(id = if (isLikedByMe) R.drawable.ic_community_like_selected else R.drawable.ic_community_like_normal),
+                                    tint = if (isLikedByMe) primary else Color.Gray,
                                     modifier = Modifier.size(18.dp),
                                     contentDescription = null
                                 )
