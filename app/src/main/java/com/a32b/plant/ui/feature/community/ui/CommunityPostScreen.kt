@@ -36,7 +36,7 @@ fun CommunityPostScreen(
 
     val postId = args?.postId
     val potId = args?.potId
-    val studyLog = args?.studyLogId
+    val studyLog = args?.studyLogIds
     val viewModel: CommunityPostViewModel = viewModel(
         factory = ViewModelFactory.communityPostViewModelFactory(postId, potId, studyLog)
     )
