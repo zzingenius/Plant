@@ -132,8 +132,7 @@ class StudyingViewModel(
     /**  학습 종료 버튼 클릭 시 학습 기록하는 다이얼로그 표출    */
     fun onFinishDialogShownChange() = _uiState.update { it.copy(isFinishDialogShown = !it.isFinishDialogShown) }
 
-    fun setStudyLog(log: List<String>) = _uiState.update { it.copy(studyLog = log) }
-
+    fun setStudyLog(studyLog: List<String>) = _uiState.update { it.copy(studyLog = studyLog.filter { log -> log.isNotBlank()  }) }
     fun onDialogDismissClick(){
         _uiState.update { it.copy(isFinishDialogShown = false, isStudying = true) }
         startStopwatch()
@@ -171,7 +170,6 @@ class StudyingViewModel(
                 level = level
             ))
         }
-
     }
 
 

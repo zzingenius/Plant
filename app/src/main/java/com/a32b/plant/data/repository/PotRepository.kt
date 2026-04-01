@@ -123,10 +123,11 @@ class PotRepository(private val db: FirebaseFirestore) {
     }
 
     fun createStudyLog(potId: String, studyLog: StudyLog) {
-        db.collection("users").document(CurrentUser.uid)
+        val docRef = db.collection("users").document(CurrentUser.uid)
             .collection("pots").document(potId)
-            .collection("logs")
-            .add(studyLog)
+            .collection("logs").document()
+
+            docRef.set(studyLog.copy(id = docRef.id))
             .addOnSuccessListener {
                 Log.d("스터디로그", "성공적")
             }
