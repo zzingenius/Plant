@@ -90,15 +90,14 @@ class HomeViewModel(
     }
     private fun updateCurrentDate() {
         val current = LocalDateTime.now()
-        _currentDate.value = TimeFormatter.formatToKoreanDate(current)
+        _currentDate.value = TimeFormatter.formatWithDayOfWeek(current)
     }
 
     private fun observeUserProfile() {
-        val uid = currentUid
-        if (uid.isEmpty()) return
+        if (currentUid.isEmpty()) return
 
         viewModelScope.launch {
-            userRepository.getUserProfile(uid).collectLatest { profile ->
+            userRepository.getUserProfile(currentUid).collectLatest { profile ->
                 profile?.let { user ->
                     _userName.value = user.nickname ?: "사용자"
 
