@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -121,7 +122,7 @@ fun CommunityPostScreen(
                     onValueChange = { viewModel.onTitleChange(it) },
                     placeholder = "제목을 입력하세요",
                     singleLine = true,
-
+                    maxLength = 50
                 )
             }
 
@@ -147,7 +148,8 @@ fun CommunityPostScreen(
                         value = uiState.content,
                         onValueChange = { viewModel.onContentChange(it) },
                         placeholder = "나누고 싶은 이야기를 적어주세요.\n\n※ 비방이나 욕설은 제재 대상이 될 수 있습니다.",
-                        modifier = Modifier.heightIn(min = 400.dp)
+                        modifier = Modifier.heightIn(min = 400.dp),
+                        maxLength = 1000
                     )
                 }
             }
@@ -199,27 +201,71 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
 }
 
 
+//@Composable
+//fun PostInputField(
+//    value: String?,
+//    onValueChange: (String) -> Unit,
+//    placeholder: String,
+//    modifier: Modifier = Modifier,
+//    singleLine: Boolean = false
+//) {
+//    TextField(
+//        value = value ?: "",
+//        onValueChange = onValueChange,
+//        placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
+//        modifier = modifier.fillMaxWidth(),
+//        singleLine = singleLine,
+//        colors = TextFieldDefaults.colors(
+//            focusedContainerColor = Color.White,
+//            unfocusedContainerColor = Color.White,
+//            focusedIndicatorColor = Color.Transparent,
+//            unfocusedIndicatorColor = Color.Transparent
+//        ),
+//        shape = RoundedCornerShape(8.dp),
+//        textStyle = Typography.bodyMedium
+//    )
+//}
 @Composable
 fun PostInputField(
     value: String?,
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    singleLine: Boolean = false
+    singleLine: Boolean = false,
+    maxLength: Int = Int.MAX_VALUE
 ) {
-    TextField(
-        value = value ?: "",
-        onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
-        modifier = modifier.fillMaxWidth(),
-        singleLine = singleLine,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        shape = RoundedCornerShape(8.dp),
-        textStyle = Typography.bodyMedium
-    )
+    val context = LocalContext.current
+
+    Column {
+        TextField(
+            value = value ?: "",
+            onValueChange = { input ->
+                if (input.length <= maxLength) {
+                    onValueChange(input)
+                } else {
+                    Toast.makeText(context, "${maxLength}자 이하로 입력해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            },
+            placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
+            modifier = modifier.fillMaxWidth(),
+            singleLine = singleLine,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(8.dp),
+            textStyle = Typography.bodyMedium
+        )
+
+        Text(
+            "${value?.length ?: 0} / $maxLength",
+            style = Typography.bodyMedium,
+            color = if ((value?.length ?: 0) >= maxLength) Color.Red else Color.Gray,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = 8.dp, top = 4.dp)
+        )
+    }
 }
