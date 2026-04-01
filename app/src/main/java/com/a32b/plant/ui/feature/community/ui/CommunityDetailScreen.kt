@@ -93,7 +93,8 @@ fun CommunityDetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, Color.LightGray)
+                border = BorderStroke(1.dp, Color.LightGray),
+                elevation = CardDefaults.elevatedCardElevation(1.dp)
             ) {
                 LazyColumn(modifier = Modifier.padding(20.dp)) {
 
@@ -106,7 +107,9 @@ fun CommunityDetailScreen(
                                 Image(painter = painterResource(R.drawable.ic_backbtn),
                                     contentDescription = "뒤로가기")
                             }
-                            Text(currentPost.title, fontSize = 24.sp,style = Typography.titleSmall,modifier = Modifier.fillMaxWidth(),textAlign = TextAlign.Center)
+                            Text(currentPost.title, fontSize = 24.sp,style = Typography.titleSmall,
+                                modifier = Modifier.padding(horizontal = 46.dp),
+                                textAlign = TextAlign.Center)
 
                         }
                         Spacer(modifier = Modifier.height(10.dp))
@@ -314,7 +317,8 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
     Card(
         colors = CardDefaults.cardColors(containerColor = textFieldBackground),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.elevatedCardElevation(1.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(nickname, fontSize = 13.sp, fontWeight = FontWeight.Bold, style = Typography.bodyMedium)
