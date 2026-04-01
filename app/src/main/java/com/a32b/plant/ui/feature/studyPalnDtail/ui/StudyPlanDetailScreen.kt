@@ -115,14 +115,16 @@ fun StudyPlanDetailScreen(
         },
         bottomBar = {
             // 학습 완료 버튼
-            Button(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                enabled = potInfo?.isCompleted == false,
-                onClick = { viewModel.setCompleteDialogShown(true)}
-            ) {
-                Text(if(potInfo?.isCompleted == true)"완료된 학습" else "학습 완료하기")
+            if(!isShareMode) {
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    enabled = potInfo?.isCompleted == false,
+                    onClick = { viewModel.setCompleteDialogShown(true) }
+                ) {
+                    Text(if (potInfo?.isCompleted == true) "완료된 학습" else "학습 완료하기")
+                }
             }
         }
     ) { innerPadding ->
