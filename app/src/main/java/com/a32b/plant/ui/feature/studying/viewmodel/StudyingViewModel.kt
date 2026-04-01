@@ -12,6 +12,7 @@ import com.a32b.plant.data.model.StudyLog
 import com.a32b.plant.data.model.StudyingUser
 import com.a32b.plant.data.repository.PotRepository
 import com.a32b.plant.data.repository.StudyingRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 
 data class StudyingUiState(
@@ -67,7 +69,7 @@ class StudyingViewModel(
     /** 비정상 종료 대비 로컬 디비에 데이터 저장   */
 
     fun saveSession(){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             while (_uiState.value.isStudying){
                 delay(5000L)
                 repository.saveSession(StudyingSession(CurrentUser.uid, tag, title, potId, _uiState.value.timer))
@@ -75,19 +77,9 @@ class StudyingViewModel(
         }
     }
 
-    /*
-    1. 데이터스토어에서 불러와
-    2. 빈 값이 아니면 저장되어 있는 유아이디랑 현재 사용자의 유아이디가 같은지 확인해
-    2-1. 같다면 이전 기록이 있다고 말하고, 이전 기록으로 학습을 이어갈건지 물어보는 다이얼로그를 띄워
-    2-2. 이어간다고 하면 -> 그 값으로 세팅해
-    2-3. 안 이어간다고 하면 걍 다이얼로그 닫고 끝내기
-    ⭐내일 와서 어플리케이션 파일 만들고 context 추가하기...
-     */
-
-
     /** db에서 같은 태그로 공부중인 사용자 데이터 가져오기 */
     fun onStudyingUsersChange(){
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(studyingUsers = repository.getStudyingUser(tag)) }
         }
     }
@@ -99,7 +91,7 @@ class StudyingViewModel(
         if(_uiState.value.isStudying) startStopwatch()
         else stopStopwatch()
     }
-//data store <- sharedPreference 상위호환 느낌
+
     /** 스톱워치 */
     private var job: Job? = null
     fun onTimerChange() = _uiState.update { it.copy(timer = it.timer + 1000 ) }
@@ -111,14 +103,20 @@ class StudyingViewModel(
                 onTimerChange()
 //                if(_uiState.value.timer % 600000L == 0L){
                 if(_uiState.value.timer % 6000L == 0L){
-                    repository.updateStudyingUser(
-                        StudyingUser(CurrentUser.uid, CurrentUser.nickname, CurrentUser.profileImg, tag, _uiState.value.timer)
-//                        StudyingUser("zz", "zz", "lv.2", tag, _uiState.value.timer)
-                    )
+                    updateUser()
                     onStudyingUsersChange()
                 }
             }
         }
+    }
+
+    fun updateUser(){
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateStudyingUser(
+                StudyingUser(CurrentUser.uid, CurrentUser.nickname, CurrentUser.profileImg, tag, _uiState.value.timer)
+            )
+        }
+
     }
     fun stopStopwatch(){
         _uiState.update { it.copy(isStudying = false) }
@@ -128,13 +126,13 @@ class StudyingViewModel(
     init {
         startStopwatch()
         saveSession()
+        updateUser()
     }
 
     /**  학습 종료 버튼 클릭 시 학습 기록하는 다이얼로그 표출    */
     fun onFinishDialogShownChange() = _uiState.update { it.copy(isFinishDialogShown = !it.isFinishDialogShown) }
 
-    fun setStudyLog(log: List<String>) = _uiState.update { it.copy(studyLog = log) }
-
+    fun setStudyLog(studyLog: List<String>) = _uiState.update { it.copy(studyLog = studyLog.filter { log -> log.isNotBlank()  }) }
     fun onDialogDismissClick(){
         _uiState.update { it.copy(isFinishDialogShown = false, isStudying = true) }
         startStopwatch()
@@ -156,9 +154,11 @@ class StudyingViewModel(
         repository.updateUserTotalStudyTime(_uiState.value.timer)
         repository.deleteStudyingUser()
 
-        viewModelScope.launch {
+        viewModelScope.launch{
             //종료 시 로컬디비에 저장된 데이터 삭제
-            repository.clearSession()
+            withContext(Dispatchers.IO) {
+                repository.clearSession()
+            }
 
             _eventChannel.send(StudyingEvent.NavigateToStudyResult(
                 timestamp = timestamp,
@@ -170,7 +170,6 @@ class StudyingViewModel(
                 level = level
             ))
         }
-
     }
 
 
