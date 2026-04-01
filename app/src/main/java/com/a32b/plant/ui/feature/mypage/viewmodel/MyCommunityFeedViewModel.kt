@@ -2,6 +2,7 @@ package com.a32b.plant.ui.feature.mypage.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.a32b.plant.core.util.ActivityType
 import com.a32b.plant.data.model.CommunityActivity
 import com.a32b.plant.data.repository.ActivityRepository
 import kotlinx.coroutines.channels.Channel
@@ -13,7 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class MyCommunityFeedUistate(
-    val selected: String = "",
+    val selected: String = ActivityType.POST,
     val activities: List<CommunityActivity> = emptyList()
 )
 sealed class MyCommunityFeedEvent{
@@ -22,12 +23,16 @@ sealed class MyCommunityFeedEvent{
 
 class MyCommunityFeedViewModel(private val repository: ActivityRepository) : ViewModel() {
 
+
     private val _uiState = MutableStateFlow(MyCommunityFeedUistate())
     val uiState = _uiState.asStateFlow()
 
     private val _eventChannel = Channel<MyCommunityFeedEvent>(Channel.BUFFERED)
     val event = _eventChannel.receiveAsFlow()
 
+    init {
+        loadActivity(_uiState.value.selected)
+    }
     fun onSelectedChange(type: String) {
         _uiState.update { it.copy(selected = type) }
         loadActivity(type)

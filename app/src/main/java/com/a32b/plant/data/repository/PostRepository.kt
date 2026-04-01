@@ -1,6 +1,7 @@
 package com.a32b.plant.data.repository
 
 import android.util.Log
+import com.a32b.plant.core.util.ActivityType
 import com.a32b.plant.data.di.AppContainer.firestore
 import com.a32b.plant.data.di.CurrentUser
 import com.a32b.plant.data.model.Comment
@@ -31,7 +32,8 @@ class PostRepository(private val db: FirebaseFirestore) {
 
                 val posts = snapshot?.documents?.mapNotNull { doc ->
                     try {
-                        doc.toObject(Post::class.java)?.copy(postId = doc.id)
+                        val likedBy = doc.get("likedBy") as? List<*> ?: emptyList<String>()
+                        doc.toObject(Post::class.java)?.copy(postId = doc.id, isLiked = CurrentUser.uid in likedBy)
                     } catch (e: Exception) {
                         Log.e("파싱오류", "문서 ID: ${doc.id}, 데이터: ${doc.data}")
                         null
@@ -47,14 +49,15 @@ class PostRepository(private val db: FirebaseFirestore) {
     fun getPostDetail(postId: String): Flow<Post?> = callbackFlow {
         val subscription = db.collection("posts").document(postId)
             .addSnapshotListener { snapshot, _ ->
-                val post = snapshot?.toObject(Post::class.java)?.copy(postId = snapshot.id)
+                val likedBy = snapshot?.get("likedBy") as? List<*> ?: emptyList<String>()
+                val post = snapshot?.toObject(Post::class.java)?.copy(postId = snapshot.id, isLiked = CurrentUser.uid in likedBy)
                 trySend(post)
             }
         awaitClose { subscription.remove() }
     }
 
     //게시글 저장
-    suspend fun savePost(post: Post, activity: CommunityActivity){
+    suspend fun savePost(post: Post, activity: CommunityActivity): String{
         val postRef = db.collection("posts").document()
         val activityRef = db.collection("activities").document()
 
@@ -65,6 +68,8 @@ class PostRepository(private val db: FirebaseFirestore) {
             batch.set(postRef, postWithAct)
             batch.set(activityRef, activityWithPost)
         }.await()
+
+        return postRef.id
     }
 
 
@@ -118,6 +123,13 @@ class PostRepository(private val db: FirebaseFirestore) {
             .collection("comments").document(commentId)
             .update("content", newContent)
             .await()
+
+        db.collection("activities").whereEqualTo("commentId", commentId)
+                .get()
+                .await()
+                .documents
+                .firstOrNull()?.reference?.update("comment", newContent)?.await()
+
     }
 
     // 댓글 삭제 함수 (activity도 함께 삭제 + commentCount 감소)
@@ -183,26 +195,45 @@ class PostRepository(private val db: FirebaseFirestore) {
             .await()
     }
 
-    fun getLiked(): Boolean{
-        db.collection("post")
-        //post/{postId}/liked/{Current.uid}
-        // isLiked 여부를 리턴하는 걸로
-        return false
-    }
-
-    suspend fun toggleLike(postId: String, uid: String, isAlreadyLiked: Boolean) {
+    suspend fun toggleLike(postId: String, uid: String, isAlreadyLiked: Boolean, title: String) {
         val postRef = db.collection("posts").document(postId)
         if (isAlreadyLiked) {
             postRef.update(
                 "likedBy", FieldValue.arrayRemove(uid),
                 "likeCount", FieldValue.increment(-1)
             ).await()
+            deleteLikedActivity(postId)
         } else {
             postRef.update(
                 "likedBy", FieldValue.arrayUnion(uid),
                 "likeCount", FieldValue.increment(1)
             ).await()
+            setLikedActivity(postId, title)
         }
+    }
+
+    suspend fun setLikedActivity(postId: String, title: String){
+        val data = CommunityActivity(type = ActivityType.LIKE, title = title, targetId = postId)
+        db.collection("activities")
+            .add(data)
+            .await()
+    }
+    suspend fun deleteLikedActivity(postId: String){
+        val docId = db.collection("activities")
+            .whereEqualTo("targetId", postId)
+            .whereEqualTo("type", ActivityType.LIKE)
+            .get()
+            .await()
+            .documents
+            .firstOrNull()?.reference?.id
+        docId?.let {
+            db.collection("activities").document(docId)
+                .delete()
+                .await()
+        }
+
+
+
     }
     suspend fun uploadPostAndReturnId(post: Post): String {
         return db.collection("posts").add(post).await().id

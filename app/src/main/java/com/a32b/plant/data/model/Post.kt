@@ -29,8 +29,6 @@ data class Post(
     val likeCount: Int = 0,
     val createdAt: Timestamp = Timestamp.now(),
     val activityId: String = "",
-    // ▼▼▼ 추가: UI 전용 필드 — Firestore 직렬화/역직렬화에서 제외
-    @get:Exclude
     val isLiked: Boolean = false,               // likes 서브컬렉션에서 조회 후 설정
 
     @get:Exclude

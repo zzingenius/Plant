@@ -110,7 +110,7 @@ class CommunityDetailViewModel(
         viewModelScope.launch {
             _isLikeProcessing.value = true
             try {
-                repository.toggleLike(postId, CurrentUser.uid, currentPost.isLiked)
+                repository.toggleLike(postId, CurrentUser.uid, currentPost.isLiked, currentPost.title)
             } catch (e: Exception) { 
                 e.printStackTrace() 
             } finally {
