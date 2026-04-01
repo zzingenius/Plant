@@ -129,7 +129,10 @@ fun CommunityPostScreen(
             item {
                 Text("태그", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                TagGroup(uiState.tags + if(uiState.isShared) listOf("공유") else emptyList(), enable = !uiState.isShared, init = if(uiState.isShared)uiState.selected else emptyList()){ selected ->
+                TagGroup(uiState.tags + if(uiState.isShared) listOf("공유") else emptyList(),
+                    enable = !uiState.isShared,
+                    editing = true,
+                    init = if(uiState.isShared)uiState.selected else emptyList()){ selected ->
                     viewModel.onSelectedTagChange(selected)
 
                 }

@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -111,6 +112,7 @@ fun CommunityListScreen(navController: NavController) {
 
 @Composable
 fun SearchBarSection(query: String, onQueryChange: (String) -> Unit) {
+    val focus = LocalFocusManager.current
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
@@ -119,7 +121,11 @@ fun SearchBarSection(query: String, onQueryChange: (String) -> Unit) {
         shape = RoundedCornerShape(12.dp),
         trailingIcon = {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(end = 8.dp)) {
-                Icon(imageVector = Icons.Default.Search, contentDescription = "검색", modifier = Modifier.size(24.dp), tint = Color.Black)
+                Icon(painter = painterResource(id = R.drawable.ic_community_clear), contentDescription = "초기화",
+                    modifier = Modifier.size(24.dp).clickable {
+                        onQueryChange("")
+                        focus.clearFocus()
+                    }, tint = Color.Black)
             }
         },
         colors = OutlinedTextFieldDefaults.colors(
