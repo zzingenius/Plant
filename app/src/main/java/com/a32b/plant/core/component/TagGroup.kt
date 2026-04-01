@@ -1,5 +1,6 @@
 package com.a32b.plant.core.component
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -21,6 +22,7 @@ import com.a32b.plant.ui.theme.primary
 fun TagGroup(tags: List<String>, init: List<String> = emptyList(),isMultiSelected: Boolean = true, enable: Boolean = true, onSelectedChanged: (List<String>) -> Unit = {}) {
     val selectedTags = remember { mutableStateListOf<String>() }
     LaunchedEffect(init) {
+        Log.d("tag group", init.toString())
         selectedTags.clear()
         selectedTags.addAll(init)
     }

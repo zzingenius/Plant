@@ -143,7 +143,7 @@ fun CommunityDetailScreen(
 
 
                     item {
-                        Text(currentPost.content, fontSize = 16.sp, lineHeight = 24.sp, color = Color.Black)
+//                        Text(currentPost.content, fontSize = 16.sp, lineHeight = 24.sp, color = Color.Black)
                         Spacer(modifier = Modifier.height(30.dp))
                     }
 

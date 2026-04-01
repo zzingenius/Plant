@@ -43,22 +43,36 @@ fun CommunityPostScreen(
     val tag = args?.tag
     val title = args?.title
     val studyLogIds = args?.studyLogIds
+    val tags = listOf(tag?.dropLast(2), tag?.takeLast(2))
     val viewModel: CommunityPostViewModel = viewModel(
-        factory = ViewModelFactory.communityPostViewModelFactory(postId, potId, tag,title,studyLogIds)
+        factory = ViewModelFactory.communityPostViewModelFactory(postId, potId, title,studyLogIds)
     )
+
+    Log.d("넘어온 거", tags.toString())
 
     val uiState by viewModel.uiState.collectAsState()
 
-    val tags = uiState.tags
+//    val tags = uiState.tags
+    viewModel.onSelectedTagChange(tags.filterNotNull())
 
 
-    LaunchedEffect(postId, potId, Unit) {
+    LaunchedEffect(postId,  Unit) {
+        Log.d("스크린","되라")
         postId?.let { viewModel.getPost(postId) }
-        potId?.let {
+        if(uiState.selected.contains("공유")){
             viewModel.onIsSharedChange()
-            Log.d("tag", tag!!)
-
         }
+//        potId?.let {
+//
+//            Log.d("tag", tag!!)
+//        }
+//        if (potId.isNullOrEmpty() && tags.contains("공유")){
+//
+//            Log.d("potId", potId.toString())
+//            Log.d("tag", tag!!)
+//
+//            viewModel.onIsSharedChange()
+//        }
         viewModel.event.collect { event ->
             when(event){
                 is CommunityPostEvent.NavigateToDetail -> {
@@ -82,7 +96,9 @@ fun CommunityPostScreen(
                     viewModel.onIsDismissDialogShowChange()
                 },
                 onRegisterClick = {
-                    if (uiState.title.isBlank() || uiState.content.isBlank()) {
+                    val isInvalid = uiState.title.isBlank() ||
+                            (uiState.studyLogs == null && uiState.content.isNullOrBlank())
+                    if (isInvalid) {
                         Toast.makeText(context, "제목과 내용을 모두 입력해주세요.", Toast.LENGTH_SHORT).show()
                     } else if(uiState.selected.isEmpty()){
                         Toast.makeText(context, "태그를 선택해주세요.", Toast.LENGTH_SHORT).show()
@@ -126,7 +142,7 @@ fun CommunityPostScreen(
             item {
                 Text("태그", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                TagGroup(tags + if(uiState.isShared) listOf("공유") else emptyList(), enable = !uiState.isShared, init = uiState.selected){ selected ->
+                TagGroup(uiState.tags + if(uiState.isShared) listOf("공유") else emptyList(), enable = !uiState.isShared, init = if(uiState.isShared)uiState.selected else emptyList()){ selected ->
                     viewModel.onSelectedTagChange(selected)
 
                 }
@@ -136,21 +152,8 @@ fun CommunityPostScreen(
 
             if (uiState.isShared){
                 val studyLogs = uiState.studyLogs ?: emptyList()
-                items(studyLogs) { log ->
-                    Card(shape = RoundedCornerShape(13.dp),
-                        elevation = CardDefaults.elevatedCardElevation(2.dp),
-                        colors = CardDefaults.cardColors(Color.White)) {
-                        Text("${log.title} [${TimeFormatter.formatToDigitalClock(log.studyingTime)}]", style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(10.dp))
-                        log.contents.forEach { content ->
-                            Text(content, style = Typography.bodyMedium,
-                                modifier = Modifier.padding(10.dp))
-                        }
-                    }
-                    val content = studyLogs.joinToString("\n\n") { log ->
-                        "${log.title} [${TimeFormatter.formatToDigitalClock(log.studyingTime)}]\n${log.contents.joinToString("\n")}"
-                    }
-                    viewModel.onContentChange(content)
+                item {
+                    StudyLogCard(studyLogs)
                 }
             }else{
                 item {
@@ -214,14 +217,14 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
 
 @Composable
 fun PostInputField(
-    value: String,
+    value: String?,
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
     singleLine: Boolean = false
 ) {
     TextField(
-        value = value,
+        value = value ?: "",
         onValueChange = onValueChange,
         placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
         modifier = modifier.fillMaxWidth(),

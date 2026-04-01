@@ -1,5 +1,6 @@
 package com.a32b.plant.ui.feature.community.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.a32b.plant.core.util.ActivityType
@@ -22,7 +23,7 @@ import kotlinx.coroutines.launch
 data class CommunityPostUiState(
     val postId: String? = null,
     val title: String = "",
-    val content: String = "",
+    val content: String? = null,
     val selected: List<String> = emptyList(),
     val potId: String? = null,
     val studyLogs: List<StudyLog>? = null,
@@ -34,7 +35,7 @@ sealed class CommunityPostEvent{
     data class NavigateToDetail(val postId: String) : CommunityPostEvent()
 }
 class CommunityPostViewModel(private val repository: PostRepository, private val potRepository: PotRepository,
-                             private var postId: String?, private val potId: String?, private val tag: String?, private val title: String?, private val studyLogIds: List<String>?
+                             private var postId: String?, private val potId: String?,  private val title: String?, private val studyLogIds: List<String>?
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CommunityPostUiState())
@@ -58,7 +59,11 @@ class CommunityPostViewModel(private val repository: PostRepository, private val
     fun getPost(postId: String) {
         viewModelScope.launch {
             repository.getPostDetail(postId).firstOrNull()?.let { post ->
-                _uiState.update { it.copy(postId = post.postId,title = post.title, content = post.content, selected = post.tag) }
+                Log.d("getPost", post.tag.toString())
+                if (post.tag.contains("공유"))
+                    _uiState.update { it.copy(isShared = true,postId = post.postId,title = post.title, studyLogs = post.studyLogs, selected = post.tag) }
+                else
+                    _uiState.update { it.copy(postId = post.postId,title = post.title, content = post.content, selected = post.tag) }
             }
         }
     }
@@ -84,26 +89,33 @@ class CommunityPostViewModel(private val repository: PostRepository, private val
             _uiState.update { it.copy(isShared = true) }
             getStudyLog()
             onTitleChange(title!!)
-            onSelectedTagChange(listOf( tag!!, "공유"))
         }
     }
 
     fun savePost(onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
+            val isShared = _uiState.value.isShared
+
             try {
+                //게시글 수정
                 if (postId != null) {
-                    // ✅ 수정 모드
-                    repository.updatePost(postId!!, _uiState.value.title, _uiState.value.content, _uiState.value.selected)
+                    //게시글이 공유글인지 판별 후
+                    repository.updatePost(isShared = isShared,
+                        postId = postId!!,
+                        title = _uiState.value.title,
+                        content = if(isShared) null else _uiState.value.content,
+                        tag = if (isShared) null else _uiState.value.selected)
+
                 } else {
 //                     ✅ 새 글 작성 모드
                     val newPost = Post(
                         author = PostAuthor(
                             CurrentUser.uid,
                             CurrentUser.nickname,
-                            CurrentUser.profileImg
-                        ),
+                            CurrentUser.profileImg),
                         title = _uiState.value.title,
-                        content = _uiState.value.content,
+                        content = if(isShared) null else _uiState.value.content,
+                        studyLogs = if(isShared)_uiState.value.studyLogs else null,
                         tag = _uiState.value.selected
                     )
                     postId = repository.savePost(newPost, CommunityActivity(type = ActivityType.POST, title = _uiState.value.title))
