@@ -5,7 +5,6 @@ import com.a32b.plant.data.di.CurrentUser
 import com.a32b.plant.data.di.CurrentUser.uid
 import com.a32b.plant.data.model.StudyLog
 import com.a32b.plant.data.model.PotInfo
-import com.a32b.plant.data.model.LogInfo
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
