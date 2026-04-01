@@ -1,0 +1,38 @@
+package com.a32b.plant.ui.feature.community.ui
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.a32b.plant.core.util.TimeFormatter
+import com.a32b.plant.data.model.StudyLog
+import com.a32b.plant.ui.theme.Typography
+
+@Composable
+fun StudyLogCard(studyLogs: List<StudyLog>) {
+    Column {
+        studyLogs.forEach { log ->
+            Card(shape = RoundedCornerShape(13.dp),
+                modifier = Modifier.padding(10.dp).fillMaxWidth(),
+                elevation = CardDefaults.elevatedCardElevation(2.dp),
+                colors = CardDefaults.cardColors(Color.White)) {
+                Text("${log.title} [${TimeFormatter.formatToDigitalClock(log.studyingTime)}]", style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(10.dp))
+                log.contents.forEach { content ->
+                    Text(content, style = Typography.bodyMedium,
+                        modifier = Modifier.padding(10.dp))
+                }
+            }
+        }
+    }
+}

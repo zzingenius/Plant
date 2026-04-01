@@ -357,7 +357,7 @@ class StudyPlanDetailViewModel(
             navController.navigate(
                 Routes.CommunityPost(
                     potId = pot.id,
-                    tag = pot.tag,
+                    tag = pot.tag + "공유",
                     title = pot.name,
                     studyLogIds = selectedIds
                 )

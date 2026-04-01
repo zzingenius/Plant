@@ -23,13 +23,14 @@ data class Post(
     // ▼▼▼ 수정: authorId/authorNickname/authorProfileImg → 중첩 맵
     val author: PostAuthor = PostAuthor(),
     val title: String = "",
-    val content: String = "",
+    val content: String? = null,
     val tag: List<String> = emptyList(),
     val commentCount: Int = 0,
     val likeCount: Int = 0,
     val createdAt: Timestamp = Timestamp.now(),
     val activityId: String = "",
-    val isLiked: Boolean = false,               // likes 서브컬렉션에서 조회 후 설정
+    val isLiked: Boolean = false, // likes 서브컬렉션에서 조회 후 설정
+    val studyLogs: List<StudyLog>? = null,
 
     @get:Exclude
     val comments: List<Comment> = emptyList()   // comments 서브컬렉션에서 조회 후 설정
