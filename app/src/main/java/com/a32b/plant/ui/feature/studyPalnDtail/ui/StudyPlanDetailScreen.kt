@@ -58,7 +58,11 @@ fun StudyPlanDetailScreen(
     val selectedStudyLog by viewModel.selectedStudyLog.collectAsState()
 
     //전체 선택 상태
-    val isAllSelected = viewModel.isAllSelected
+    val isAllSelected by remember(logs) {
+        derivedStateOf {
+            logs.isNotEmpty() && logs.all { it.isSelected }
+        }
+    }
 
     //공유 모든 상태
     val isShareMode by viewModel.isShareMode.collectAsState()
@@ -150,7 +154,10 @@ fun StudyPlanDetailScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if(isShareMode){
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable { viewModel.toggleAllSelection(!isAllSelected)}
+                        ) {
                             //전체 선택
                             Checkbox(
                                 checked = isAllSelected,
