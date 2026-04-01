@@ -41,6 +41,7 @@ class MyPageArchiveDetailViewModel(
     private val _uiState = MutableStateFlow(MyPageArchiveDetailStatus())
     val uiState = _uiState.asStateFlow()
     private var isUploading = false
+
     init {
         viewModelScope.launch {
             val potInfo = potRepository.getUserPotById(CurrentUser.uid, potId)
@@ -57,11 +58,20 @@ class MyPageArchiveDetailViewModel(
     }
 
     fun toggleSelectionMode(isEnabled: Boolean) {
-        _uiState.update {
-            it.copy(
-                isSelectionMode = isEnabled,
-                selectedIds = emptyList()
-            )
+        _uiState.update { currentState ->
+            // 선택 모드로 변경
+            if (!currentState.isSelectionMode) {
+                currentState.copy(
+                    isSelectionMode = true,
+                    selectedIds = currentState.logs.map { it.id },
+                )
+            } else {
+                // 일반 모드로 변경
+                currentState.copy(
+                    isSelectionMode = false,
+                    selectedIds = emptyList()
+                )
+            }
         }
     }
 
@@ -78,6 +88,7 @@ class MyPageArchiveDetailViewModel(
             currentState.copy(selectedIds = currentSelected)
         }
     }
+
     // 체크한 아이템 반환
     fun getSelectedLogsData(): List<StudyLog> {
         return uiState.value.logs.filter { log ->
@@ -95,14 +106,31 @@ class MyPageArchiveDetailViewModel(
 
         viewModelScope.launch {
             val potId = pot.id ?: "temp_id"
-            val tag = pot.tag ?: "공유"
+            val tag = (pot.tag + "공유")
             val title = pot.name ?: "제목 없음"
 
-            val studyLogIds  = selectedLogs.map { it.id }
+            val studyLogIds = selectedLogs.map { it.id }
 
-            onSuccess(potId, tag, title, studyLogIds )
+            onSuccess(potId, tag, title, studyLogIds)
 
             Log.d("plantLog", "종료 - 데이터 전달 완료")
+        }
+    }
+
+    fun clickAllCheckbox() {
+        // db 에서 받아온 데이터 담겨있는 list
+        val currentLogs = uiState.value.logs
+        val selectedIds = uiState.value.selectedIds
+
+        _uiState.update { currentState ->
+            // 체크되어있는 개수와 전체 아이템 개수가 같고 아이템이 비어있지 않다면 체크 초기화
+            if (selectedIds.size == currentLogs.size && currentLogs.isNotEmpty()) {
+                currentState.copy(selectedIds = emptyList())
+            } else {
+                //
+                val allIds = currentLogs.map { it.id }
+                currentState.copy(selectedIds = allIds)
+            }
         }
     }
 }
