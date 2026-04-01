@@ -430,18 +430,21 @@ fun StudyRecordCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // 학습 상세 내용 -> 2줄 제한
-            val combinedContent = log.contents
-                .take(2)
-                .joinToString("\n") { "• $it" }
+            val combinedContent = log.contents.take(2).joinToString("\n") { "• $it" }
+                val finalContent = if (log.contents.size > 2) {
+                    "$combinedContent\n..."
+                } else {
+                    combinedContent                }
+
                 if(combinedContent.isNotEmpty()){
                     Text(
-                        text = combinedContent,
+                        text = finalContent,
                         style = MaterialTheme.typography.bodySmall,
                         color = fontColor,
                         modifier = Modifier.fillMaxWidth(),
 
                         // 표시 줄 수
-                        maxLines = 2,
+                        maxLines = 3,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
