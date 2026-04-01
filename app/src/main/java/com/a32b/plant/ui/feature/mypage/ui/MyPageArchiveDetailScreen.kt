@@ -13,6 +13,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -43,6 +44,8 @@ import com.a32b.plant.data.di.ViewModelFactory
 import java.text.SimpleDateFormat
 import java.util.Locale
 import com.a32b.plant.core.component.ConfirmDialog
+import com.a32b.plant.ui.theme.fontColor
+import com.a32b.plant.ui.theme.fontColorSub
 
 //
 // 학습 완료 화분 리스트 -> 화분 상세 창
@@ -66,6 +69,9 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     Scaffold(
+        // ---------- 일반 모드 : 뒤로가기, [태그] 완료된 학습화분 이름, 공유하기 버튼
+        // ---------- 공유 모드 : 취소버튼(일반모드로 변경), [태그] 완료된 학습화분 이름, 커뮤니티 공유 버튼
+
         topBar = {
             Row(
                 modifier = Modifier
@@ -92,7 +98,7 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                 }
 
                 Text(
-                    text = "[${pot?.tag ?: "태그"}] ",
+                    text = "[${pot?.tag ?: "태그"}] ${pot?.name ?: "제목"}",
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier
@@ -118,14 +124,16 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
             }
         }
     ) { paddingValues ->
+        // ---------- 완료 화분 정보 : 화분 이미지, 시작일, 종료일, 총 공부 시간
         if (pot != null) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues), // Scaffold 패딩 적용
-                contentPadding = PaddingValues(16.dp), // 전체 여백
-                verticalArrangement = Arrangement.spacedBy(12.dp) // 아이템 간 간격
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // ---------- 완료 화분 정보 : 화분 이미지, 시작일, 종료일, 총 공부 시간
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ProfileImage(level = pot.level, size = 100)
@@ -147,7 +155,61 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
-                // 기록 리스트
+                if (uiState.isSelectionMode) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                //전체 선택
+                                Checkbox(
+                                    //
+                                    checked = uiState.selectedIds.size == uiState.logs.size && uiState.logs.isNotEmpty(),
+                                    onCheckedChange = {
+                                        viewModel.clickAllCheckbox()
+                                    }
+                                )
+                                Text("전체 선택", style = MaterialTheme.typography.bodyMedium)
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+                            TextButton(
+                                onClick = { },
+                                modifier = Modifier.height(36.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp)
+                            ) {
+                                Text(
+                                    text = "${uiState.selectedIds.size}개 선택됨",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = fontColorSub
+                                )
+                            }
+                        }
+                        HorizontalDivider(thickness = 0.5.dp, color = fontColorSub)
+                    }
+                }
+//                    ----------
+                // ---------- 기록 리스트
+                if (uiState.logs.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "학습 기록이 없습니다.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
                 items(uiState.logs) { log ->
                     Card(
                         modifier = Modifier
@@ -198,7 +260,10 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                                             text = "• $content",
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(start = 4.dp, bottom = 2.dp)
+                                            modifier = Modifier.padding(
+                                                start = 4.dp,
+                                                bottom = 2.dp
+                                            )
                                         )
                                     }
                                 }

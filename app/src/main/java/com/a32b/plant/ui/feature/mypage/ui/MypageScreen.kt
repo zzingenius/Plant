@@ -64,8 +64,6 @@ import com.a32b.plant.ui.theme.sub2
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextFieldDefaults
-import com.a32b.plant.ui.theme.background
-import com.a32b.plant.ui.theme.textFieldBackground
 import com.a32b.plant.core.component.ConfirmDialog
 import com.a32b.plant.ui.theme.PlantTheme
 
@@ -459,7 +457,7 @@ fun ProfileDialog(
                             .weight(1f),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(sub2)
-                    ) { Text("취소", style = Typography.bodyMedium) }
+                    ) { Text("취소", style = MaterialTheme.typography.bodyMedium) }
 
                     Button(
                         onClick = {
@@ -470,7 +468,7 @@ fun ProfileDialog(
                             .height(45.dp)
                             .weight(1f),
                         shape = RoundedCornerShape(8.dp)
-                    ) { Text("저장", style = Typography.titleSmall) }
+                    ) { Text("저장", style = Typography.bodyMedium) }
                 }
             }
         }
