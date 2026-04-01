@@ -148,6 +148,7 @@ class StudyingViewModel(
 
         //개별 학습 기록의 제목
         val timestamp = "${TimeFormatter.formatToKoreanDate(LocalDateTime.now())} $startTime ~ ${getCurrentTime()}"
+        val resultTimestamp = "${TimeFormatter.formatWithDayOfWeek(LocalDateTime.now())} $startTime ~ ${getCurrentTime()}"
         fun setStudyLog(): StudyLog = StudyLog(timestamp, _uiState.value.studyLog, _uiState.value.timer)
         potRepository.createStudyLog(potId, setStudyLog())
         potRepository.updateTotalStudyTime(potId, _uiState.value.timer)
@@ -161,7 +162,7 @@ class StudyingViewModel(
             }
 
             _eventChannel.send(StudyingEvent.NavigateToStudyResult(
-                timestamp = timestamp,
+                timestamp = resultTimestamp,
                 tag = tag,
                 potId = potId,
                 title = title,

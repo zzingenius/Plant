@@ -72,7 +72,7 @@ fun StudyResultScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(17.dp))
 
 
-            Text("$timestamp" , style = Typography.titleLarge, fontSize = 27.sp )
+            Text(timestamp , style = Typography.titleSmall , fontSize = 22.sp)
             Spacer(modifier = Modifier.height(13.dp))
 
             Card(modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(7.dp),
@@ -82,7 +82,7 @@ fun StudyResultScreen(navController: NavController) {
             ) {
                 Spacer(modifier = Modifier.height(22.dp))
                 Text(modifier = Modifier.padding(start = 12.dp),
-                    text = "[$tag] $title", style = Typography.bodyMedium, fontSize = 22.sp)
+                    text = "[$tag] $title", style = Typography.titleSmall)
 
                 log.forEach { text ->
                     Text("- $text", style = Typography.bodyMedium, modifier = Modifier.padding(start = 22.dp, top = 10.dp, bottom = 10.dp))
