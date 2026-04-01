@@ -90,7 +90,7 @@ class HomeViewModel(
     }
     private fun updateCurrentDate() {
         val current = LocalDateTime.now()
-        _currentDate.value = TimeFormatter.formatToKoreanDate(current)
+        _currentDate.value = TimeFormatter.formatWithDayOfWeek(current)
     }
 
     private fun observeUserProfile() {
