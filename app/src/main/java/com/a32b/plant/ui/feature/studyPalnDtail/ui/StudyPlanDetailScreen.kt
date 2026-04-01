@@ -146,22 +146,22 @@ fun StudyPlanDetailScreen(
             .fillMaxSize()
         ) {
             //전체 선택 체크 박스 + 삭제 버튼
-            if (logs.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if(isShareMode){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (isShareMode) {
+                    if (logs.isNotEmpty()) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.clickable { viewModel.toggleAllSelection(!isAllSelected)}
+                            modifier = Modifier.clickable { viewModel.toggleAllSelection(!isAllSelected) }
                         ) {
                             //전체 선택
                             Checkbox(
                                 checked = isAllSelected,
-                             onCheckedChange = { viewModel.toggleAllSelection(it) }
+                                onCheckedChange = { viewModel.toggleAllSelection(it) }
                             )
                             Text("전체 선택", style = MaterialTheme.typography.bodyMedium)
                         }
@@ -171,27 +171,26 @@ fun StudyPlanDetailScreen(
                             style = MaterialTheme.typography.labelMedium,
                             color = fontColorSub
                         )
-
-                    } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                            TextButton(
-                                onClick = { viewModel.setPotDeleteDialogShown(true) },
-                                modifier = Modifier.height(20.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_trash),
-                                    contentDescription = "화분 전체 삭제",
-                                    modifier = Modifier.size(18.dp),
-                                    tint = fontColorSub
-                                )
-                                Spacer(modifier = Modifier.width(2.dp))
-                                Text(
-                                    "화분 전체 삭제",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = fontColorSub
-                                )
-                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(
+                        onClick = { viewModel.setPotDeleteDialogShown(true) },
+                        modifier = Modifier.height(20.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_trash),
+                            contentDescription = "화분 전체 삭제",
+                            modifier = Modifier.size(18.dp),
+                            tint = fontColorSub
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            "화분 전체 삭제",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = fontColorSub
+                        )
                     }
                 }
             }
