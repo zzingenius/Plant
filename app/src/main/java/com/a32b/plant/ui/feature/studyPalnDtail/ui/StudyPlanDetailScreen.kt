@@ -1,5 +1,6 @@
 package com.a32b.plant.ui.feature.studyPalnDtail.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.a32b.plant.core.util.TimeFormatter
+import com.a32b.plant.ui.theme.background
 import com.a32b.plant.ui.theme.fontColor
 import com.a32b.plant.ui.theme.fontColorSub
 import java.time.ZoneId
@@ -64,6 +66,13 @@ fun StudyPlanDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(top = 0.dp),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White,
+                    titleContentColor = fontColor,
+                    navigationIconContentColor = fontColor,
+                    actionIconContentColor = fontColor
+                ),
                 title = {
                     potInfo?.let {
                         Text("[${it.tag}] ${it.name}",
