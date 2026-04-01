@@ -10,14 +10,17 @@ import com.a32b.plant.data.model.Comment
 import com.a32b.plant.data.model.CommentUser
 import com.a32b.plant.data.model.CommunityActivity
 import com.a32b.plant.data.model.Post
+import com.a32b.plant.data.model.StudyLog
 import com.a32b.plant.data.repository.PostRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 data class CommunityDetailUiState(
-    //⭐⭐⭐⭐다른 것들도 여기로 넣어서 관리하기
     val comment: String = "",
     val commentList: List<Comment> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val isShared: Boolean = false,
+    val studyLogs: List<StudyLog>? = emptyList(),
 
     // 댓글 수정 상태
     val editingCommentId: String? = null,
@@ -48,10 +51,18 @@ class CommunityDetailViewModel(
     init {
         loadPostDetail()
         loadComment()
+        onIsSharedChange()
     }
 
     private fun loadPostDetail() {
         repository.getPostDetail(postId).onEach { _post.value = it }.launchIn(viewModelScope)
+
+    }
+
+    //공유 여부 체크
+    fun onIsSharedChange(){
+        if (!_post.value?.studyLogs.isNullOrEmpty())
+            _uiState.update { it.copy(isShared = true) }
     }
 
     private fun loadComment(){

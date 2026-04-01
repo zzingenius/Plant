@@ -1,23 +1,20 @@
 package com.a32b.plant.ui.feature.community.ui
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -33,6 +30,7 @@ import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityDetailViewModel
 import com.a32b.plant.ui.theme.*
 import com.a32b.plant.core.component.ConfirmDialog
+import com.a32b.plant.core.component.Tag
 import com.a32b.plant.data.model.Comment
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,27 +66,6 @@ fun CommunityDetailScreen(
             }
         )
     }
-//    if (showDeleteDialog) {
-//        AlertDialog(
-//            onDismissRequest = { viewModel.closeDeleteDialog() },
-//            title = { Text("게시글 삭제", color = Color.Black, fontWeight = FontWeight.Bold) },
-//            text = { Text("정말로 삭제하시겠습니까?", color = Color.Black) },
-//            confirmButton = {
-//                TextButton(onClick = {
-//                    viewModel.deletePost { navController.popBackStack() }
-//                    viewModel.closeDeleteDialog()
-//                }) {
-//                    Text("삭제", color = Color.Red, fontWeight = FontWeight.Bold)
-//                }
-//            },
-//            dismissButton = {
-//                TextButton(onClick = { viewModel.closeDeleteDialog() }) {
-//                    Text("취소", color = Color.Black)
-//                }
-//            },
-//            containerColor = sub2
-//        )
-//    }
 
     // 댓글 삭제 다이얼로그
     if (uiState.deletingCommentId != null) {
@@ -101,58 +78,73 @@ fun CommunityDetailScreen(
 
     Scaffold(
         containerColor = background,
-        topBar = {
-            TopAppBar(
-                title = { },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            painterResource(id = R.drawable.ic_backbtn),
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = Color.Black
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-            )
-        }
     ) { innerPadding ->
         val currentPost = postState ?: return@Scaffold
 
-        Column(modifier = Modifier.padding(innerPadding).fillMaxSize().padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+            .padding(horizontal = 20.dp)) {
             Card(
                 modifier = Modifier.fillMaxSize(),
-                colors = CardDefaults.cardColors(containerColor = sub2),
-                shape = RoundedCornerShape(12.dp)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, Color.LightGray)
             ) {
                 LazyColumn(modifier = Modifier.padding(20.dp)) {
 
                     item {
-                        Text(currentPost.title, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Box(modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center){
+                            IconButton(onClick = {navController.popBackStack()},
+                                modifier = Modifier.size(30.dp).align(Alignment.CenterStart)
+                            ) {
+                                Image(painter = painterResource(R.drawable.ic_backbtn),
+                                    contentDescription = "뒤로가기")
+                            }
+                            Text(currentPost.title, fontSize = 24.sp,style = Typography.titleSmall,modifier = Modifier.fillMaxWidth(),textAlign = TextAlign.Center)
+
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(sub3))
+                            ProfileImage(currentPost.author.profileImg, 36)
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(currentPost.author.nickname, fontWeight = FontWeight.Medium, color = Color.Black)
                             Spacer(modifier = Modifier.weight(1f))
                             Text(TimeFormatter.formatTimestamp(currentPost.createdAt), color = Color.Black, fontSize = 12.sp)
                         }
+                    }
+                    item{
+                        Row(modifier = Modifier.padding(start = 7.dp)) {
+                            for (tag in currentPost.tag) {
+                                Tag(tag)
+                            }
+                        }
                         Spacer(modifier = Modifier.height(20.dp))
+
                     }
 
+                    if(!currentPost.studyLogs.isNullOrEmpty()){
+                        item {
+                            StudyLogCard(currentPost.studyLogs)
+                        }
+                    }else{
+                        item {
+                        Text(currentPost.content?:"", fontSize = 16.sp, lineHeight = 24.sp, color = Color.Black)
+
+                        }
+                    }
 
                     item {
-//                        Text(currentPost.content, fontSize = 16.sp, lineHeight = 24.sp, color = Color.Black)
                         Spacer(modifier = Modifier.height(30.dp))
-                    }
 
-
-                    item {
                         HorizontalDivider(color = sub3.copy(alpha = 0.5f))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp)
                         ) {
                             Icon(painterResource(id = R.drawable.ic_community_comment), null, tint = Color.Gray, modifier = Modifier.size(18.dp))
                             Text(" ${currentPost.commentCount}", color = Color.Black, modifier = Modifier.padding(end = 16.dp))
@@ -211,9 +203,6 @@ fun CommunityDetailScreen(
                             onDeleteClick = { viewModel.openCommentDeleteDialog(commentData.commentId) }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
-//                    items(uiState.commentList) { commentData ->
-//                        CommentRow(name = commentData.user.nickname, profileImg = commentData.user.profileImg,content = commentData.content)
-//                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
             }
@@ -295,17 +284,6 @@ fun CommentRow(
         }
     }
 }
-//@Composable
-//fun CommentRow(name: String, profileImg:String, content: String) {
-//    Row(verticalAlignment = Alignment.Top) {
-//        ProfileImage(profileImg, 24)
-//        Spacer(Modifier.width(8.dp))
-//        Column {
-//            Text(name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.Black)
-//            Text(content, fontSize = 14.sp, color = Color.Black)
-//        }
-//    }
-//}
 
 @Composable
 fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
@@ -319,7 +297,10 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
             TextField(
                 value = text,
                 onValueChange = onTextChange,
-                modifier = Modifier.fillMaxWidth().height(70.dp).padding(top = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(top = 8.dp),
                 placeholder = { Text("댓글을 남겨보세요...", fontSize = 13.sp, color = Color.Gray) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
@@ -334,7 +315,9 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
             Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
                 Button(
                     onClick = onSend,
-                    modifier = Modifier.height(32.dp).padding(top = 4.dp),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .padding(top = 4.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = primary),
                     shape = RoundedCornerShape(4.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
