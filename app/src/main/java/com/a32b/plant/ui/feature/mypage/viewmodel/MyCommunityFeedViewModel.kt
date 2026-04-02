@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.a32b.plant.core.util.ActivityType
 import com.a32b.plant.data.model.CommunityActivity
 import com.a32b.plant.data.repository.ActivityRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +31,7 @@ class MyCommunityFeedViewModel(private val repository: ActivityRepository) : Vie
     private val _eventChannel = Channel<MyCommunityFeedEvent>(Channel.BUFFERED)
     val event = _eventChannel.receiveAsFlow()
 
+    private var collectJob: Job? = null
     init {
         loadActivity(_uiState.value.selected)
     }
@@ -38,11 +40,13 @@ class MyCommunityFeedViewModel(private val repository: ActivityRepository) : Vie
         loadActivity(type)
     }
 
-    fun loadActivity(selected: String){
-        //셀렉티드에 맞는 활동 db에서 불러오기
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(activities = repository.getActivityList(selected)) }
+    fun loadActivity(selected: String) {
+        collectJob?.cancel() // 이전 구독 취소
+        collectJob = viewModelScope.launch {
+            repository.getActivityList(selected)
+                .collect { list ->
+                    _uiState.update { it.copy(activities = list) }
+                }
         }
     }
 
