@@ -24,6 +24,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -166,7 +167,8 @@ fun HomeHeaderSection(date: String, displayPot: PotInfo, onStartClick: () -> Uni
         Spacer(modifier = Modifier.height(20.dp))
         MainPlantCard(displayPot = displayPot, onStartClick = onStartClick)
         Spacer(modifier = Modifier.height(20.dp))
-        Text("아래로 내려 화분 추가 & 확인하기", style = MaterialTheme.typography.bodySmall)
+        Text("아래로 내려서 화분 확인하기", style = MaterialTheme.typography.bodySmall,fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(20.dp))
         Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Gray)
     }
 }
@@ -201,7 +203,7 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit,
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // 화분이 없으면 안내 문구 - Bold 적용
+            // 화분이 없으면 안내 문구
             Text(
                 text = if (isPotEmpty) "화분을 등록해보세요" else (displayPot.name ?: "이름 없음"),
                 style = MaterialTheme.typography.displayLarge,
