@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -305,53 +307,65 @@ fun GridPlantItem(
 fun InterruptedDialog(onDismiss: () -> Unit, onConfirm: (List<String>) -> Unit, studySession: StudyingSession){
     val inputs = remember { mutableStateListOf("") }
     val focus = remember { mutableStateListOf(FocusRequester()) }
+    val scrollState = rememberLazyListState()
 
     LaunchedEffect(inputs.size) {
-        if (inputs.size > 1) focus.last().requestFocus()
+        if (inputs.size > 1) {
+            focus.last().requestFocus()
+            scrollState.animateScrollToItem(inputs.size)
+        }
     }
     Dialog(onDismissRequest = {}) {
         Card(shape = RoundedCornerShape(30.dp),
             colors = CardDefaults.cardColors(background)) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(22.dp)) {
-                Text("이전 학습 기록이 저장되지 않았습니다!", style = Typography.titleSmall)
-                Spacer(modifier = Modifier.height(10.dp))
-                Text("저장하시겠습니까?", style = Typography.bodyMedium)
-                Spacer(modifier = Modifier.height(10.dp))
+            Column(modifier = Modifier.padding(22.dp)
+                    .consumeWindowInsets(WindowInsets.ime)
+                    .imePadding()) {
+                LazyColumn(state = scrollState,
+                    modifier = Modifier.weight(1f, fill = false),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    item {
+                        Text("이전 학습 기록이 저장되지 않았습니다!", style = Typography.titleSmall)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text("저장하시겠습니까?", style = Typography.bodyMedium)
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                Text("[${studySession.tag}] ${studySession.title}", style = Typography.bodyMedium)
-                Text(TimeFormatter.formatToDigitalClock(studySession.time!!), style = Typography.bodyMedium)
+                        Text("[${studySession.tag}] ${studySession.title}", style = Typography.bodyMedium)
+                        Text(TimeFormatter.formatToDigitalClock(studySession.time!!), style = Typography.bodyMedium)
 
-                Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
 
-                inputs.forEachIndexed { index, value ->
-                    OutlinedTextField(
-                        value = value,
-                        shape = RoundedCornerShape(10.dp),
-                        onValueChange = { inputs[index] = it },
-                        modifier = Modifier.fillMaxWidth()
-                            .focusRequester(focus[index]),
-                        placeholder = {Text("학습을 기록해보세요!", style = Typography.bodyMedium, color = Color(0xFF858585))},
-                        textStyle = Typography.bodyMedium,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(
-                            onNext = {
-                                inputs.add("")
-                                focus.add(FocusRequester())
-                            }
+                    itemsIndexed(inputs) { index, value ->
+                        OutlinedTextField(
+                            value = value,
+                            shape = RoundedCornerShape(10.dp),
+                            onValueChange = { inputs[index] = it },
+                            modifier = Modifier.fillMaxWidth()
+                                .focusRequester(focus[index]),
+                            placeholder = {Text("학습을 기록해보세요!", style = Typography.bodyMedium, color = Color(0xFF858585))},
+                            textStyle = Typography.bodyMedium,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(
+                                onNext = {
+                                    inputs.add("")
+                                    focus.add(FocusRequester())
+                                }
+                            )
                         )
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
 
-
-                // 플러스 버튼
-                IconButton(onClick = {
-                    inputs.add("")
-                    focus.add(FocusRequester())
-                }, modifier = Modifier.size(30.dp)) {
-                    Image(painter = painterResource(R.drawable.ic_studying_plus),
-                        contentDescription = "추가 버튼")
+                    item {
+                        // 플러스 버튼
+                        IconButton(onClick = {
+                            inputs.add("")
+                            focus.add(FocusRequester())
+                        }, modifier = Modifier.size(30.dp)) {
+                            Image(painter = painterResource(R.drawable.ic_studying_plus),
+                                contentDescription = "추가 버튼")
+                        }
+                    }
                 }
                 //Spacer(modifier = Modifier.height(30.dp))
 

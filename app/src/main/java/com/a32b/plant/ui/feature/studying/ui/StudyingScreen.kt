@@ -2,6 +2,7 @@ package com.a32b.plant.ui.feature.studying.ui
 
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -10,13 +11,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -95,6 +103,10 @@ fun StudyingScreen(navController: NavController) {
     val timerButtonText = if (uiState.isStudying) "일시정지" else "학습하기"
     val timerButtonBack = if (uiState.isStudying) sub2 else primary
 
+    BackHandler {
+        viewModel.onFinishDialogShownChange()
+    }
+
     LaunchedEffect(Unit) {
         viewModel.onStudyingUsersChange()
         viewModel.event.collect { event ->
@@ -139,7 +151,6 @@ fun StudyingScreen(navController: NavController) {
                 //일시정지/학습시작 버튼
                 StateChangeButton(timerButtonText, timerButtonBack){ viewModel.onStudyingStatusChange()}
                 StateChangeButton("학습종료", sub1) {
-                    viewModel.stopStopwatch()
                     viewModel.onFinishDialogShownChange()
                 }
             }
@@ -149,6 +160,8 @@ fun StudyingScreen(navController: NavController) {
         }
     }
     if(uiState.isFinishDialogShown){
+        viewModel.stopStopwatch()
+
         StudyFinishDialog(onDismiss = {viewModel.onDialogDismissClick()},onConfirm = { logs ->
             Log.d("입력값 확인", logs.toString())
             viewModel.onIsStudyFinishChange()
@@ -242,60 +255,74 @@ fun StudyFinishDialog(
     val inputs = remember { mutableStateListOf("") }  // 입력창 리스트
     val focus = remember { mutableStateListOf(FocusRequester()) } //포커스 조절하는 거
 
+    val scrollState = rememberLazyListState()
     LaunchedEffect(inputs.size) {
-        if (inputs.size > 1) focus.last().requestFocus()
+        if (inputs.size > 1) {
+            focus.last().requestFocus()
+            scrollState.animateScrollToItem(inputs.size)
+        }
     }
     Dialog(onDismissRequest = {}) {
-        Card(shape = RoundedCornerShape(8.dp),
+        Card(
+            shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(background)) {
-            Column(modifier = Modifier.padding(16.dp),
+            Column(modifier = Modifier.padding(16.dp)
+                .consumeWindowInsets(WindowInsets.ime) //키보드 패딩
+                .imePadding(),
                 horizontalAlignment = Alignment.CenterHorizontally) {
+                LazyColumn(
+                    state = scrollState,
+                    modifier = Modifier.weight(1f, fill = false),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                Spacer(modifier = Modifier.height(10.dp))
+                        Text("학습 종료", style = Typography.titleSmall)
 
-                Text("학습 종료", style = Typography.titleSmall)
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+                        Text("[$tag] $title", style = Typography.titleSmall)
 
-                Text("[$tag] $title", style = Typography.titleSmall)
+                        Spacer(modifier = Modifier.height(21.dp))
+                    }
 
-                Spacer(modifier = Modifier.height(21.dp))
-
-                // 입력창 리스트
-                inputs.forEachIndexed { index, value ->
-                    OutlinedTextField(
-                        value = value,
-                        shape = RoundedCornerShape(10.dp),
-                        onValueChange = { inputs[index] = it },
-                        modifier = Modifier.fillMaxWidth()
-                            .focusRequester(focus[index]),
-                        placeholder = {Text("오늘의 학습을 기록해보세요!", style = Typography.bodyMedium, color = Color(0xFF858585))},
-                        textStyle = Typography.bodyMedium,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(
-                            onNext = {
-                                inputs.add("")
-                                focus.add(FocusRequester())
-                            }
+                    // 입력창 리스트
+                    itemsIndexed(inputs) { index, value ->
+                        OutlinedTextField(
+                            value = value,
+                            shape = RoundedCornerShape(10.dp),
+                            onValueChange = { inputs[index] = it },
+                            modifier = Modifier.fillMaxWidth()
+                                .focusRequester(focus[index]),
+                            placeholder = {Text("오늘의 학습을 기록해보세요!", style = Typography.bodyMedium, color = Color(0xFF858585))},
+                            textStyle = Typography.bodyMedium,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(
+                                onNext = {
+                                    inputs.add("")
+                                    focus.add(FocusRequester())
+                                }
+                            )
                         )
-                    )
-                    Spacer(modifier = Modifier.height(22.dp))
+                        Spacer(modifier = Modifier.height(22.dp))
+                    }
+
+                    item {
+                        // 플러스 버튼
+                        IconButton(onClick = {
+                            inputs.add("")
+                            focus.add(FocusRequester())
+                        }) {
+                            Image(painter = painterResource(R.drawable.ic_studying_plus),
+                                contentDescription = "추가 버튼")
+                        }
+
+                        Spacer(modifier = Modifier.height(30.dp))
+                    }
                 }
-
-
-                // 플러스 버튼
-                IconButton(onClick = {
-                    inputs.add("")
-                    focus.add(FocusRequester())
-                }) {
-                    Image(painter = painterResource(R.drawable.ic_studying_plus),
-                        contentDescription = "추가 버튼")
-                }
-
-                Spacer(modifier = Modifier.height(30.dp))
-
                 // 취소 / 종료 버튼
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
                     Button(onClick = onDismiss,
                         modifier = Modifier.height(45.dp).weight(1f),
                         shape = RoundedCornerShape(8.dp),
@@ -311,6 +338,7 @@ fun StudyFinishDialog(
                     ) { Text("종료", style = Typography.titleSmall) }
                 }
             }
+
         }
     }
 }
