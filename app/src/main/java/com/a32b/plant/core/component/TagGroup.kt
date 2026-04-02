@@ -1,6 +1,7 @@
 package com.a32b.plant.core.component
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -12,17 +13,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.primary
 
 @Composable
-fun TagGroup(tags: List<String>, init: List<String> = emptyList(),isMultiSelected: Boolean = true, enable: Boolean = true, onSelectedChanged: (List<String>) -> Unit = {}) {
+fun TagGroup(tags: List<String>, init: List<String> = emptyList(),
+             isMultiSelected: Boolean = true,
+             enable: Boolean = true,
+             editing: Boolean = false,
+             onSelectedChanged: (List<String>) -> Unit = {}) {
+    val context = LocalContext.current
     val selectedTags = remember { mutableStateListOf<String>() }
     LaunchedEffect(init) {
-        Log.d("tag group", init.toString())
         selectedTags.clear()
         selectedTags.addAll(init)
     }
@@ -39,11 +46,22 @@ fun TagGroup(tags: List<String>, init: List<String> = emptyList(),isMultiSelecte
                 modifier = Modifier.padding(5.dp),
                 enabled = enable,
                 onClick = {
-                    if(isMultiSelected){
+                    if (isMultiSelected) {
                         //다중 선택
-                        if (selectedTags.contains(tag)) selectedTags.remove(tag)
-                        else selectedTags.add(tag)
-                    }else{
+                        if (editing) {
+                            val blockedIndexes = listOf(0, 1, 2)
+                            val clickedIndex = tags.indexOf(tag)
+                            val isConflicted = clickedIndex in blockedIndexes &&
+                                    blockedIndexes.filter { it != clickedIndex } //선택하지 않은 걸 골라내고
+                                        .any { tags.getOrNull(it) in selectedTags } // 그것들이 셀렉티드에 있는지 확인
+
+                            if (isConflicted)
+                                Toast.makeText(context, "학생 태그는 하나만 선택할 수 있습니다!", Toast.LENGTH_SHORT).show()
+                            else selectedTags.toggle(tag)
+                        } else {
+                            selectedTags.toggle(tag)
+                        }
+                    } else {
                         //단일 선택
                         selectedTags.clear()
                         selectedTags.add(tag)
@@ -55,4 +73,7 @@ fun TagGroup(tags: List<String>, init: List<String> = emptyList(),isMultiSelecte
             }
         }
     }
+}
+fun SnapshotStateList<String>.toggle(tag: String) {
+    if (contains(tag)) remove(tag) else add(tag)
 }

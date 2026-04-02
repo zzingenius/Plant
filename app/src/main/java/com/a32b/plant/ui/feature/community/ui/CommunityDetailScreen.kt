@@ -1,5 +1,7 @@
 package com.a32b.plant.ui.feature.community.ui
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -12,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -89,7 +93,8 @@ fun CommunityDetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, Color.LightGray)
+                border = BorderStroke(1.dp, Color.LightGray),
+                elevation = CardDefaults.elevatedCardElevation(1.dp)
             ) {
                 LazyColumn(modifier = Modifier.padding(20.dp)) {
 
@@ -102,7 +107,9 @@ fun CommunityDetailScreen(
                                 Image(painter = painterResource(R.drawable.ic_backbtn),
                                     contentDescription = "뒤로가기")
                             }
-                            Text(currentPost.title, fontSize = 24.sp,style = Typography.titleSmall,modifier = Modifier.fillMaxWidth(),textAlign = TextAlign.Center)
+                            Text(currentPost.title, fontSize = 24.sp,style = Typography.titleSmall,
+                                modifier = Modifier.padding(horizontal = 46.dp),
+                                textAlign = TextAlign.Center)
 
                         }
                         Spacer(modifier = Modifier.height(10.dp))
@@ -110,9 +117,9 @@ fun CommunityDetailScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             ProfileImage(currentPost.author.profileImg, 36)
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(currentPost.author.nickname, fontWeight = FontWeight.Medium, color = Color.Black)
+                            Text(currentPost.author.nickname,  style = Typography.bodyMedium)
                             Spacer(modifier = Modifier.weight(1f))
-                            Text(TimeFormatter.formatTimestamp(currentPost.createdAt), color = Color.Black, fontSize = 12.sp)
+                            Text(TimeFormatter.formatTimestamp(currentPost.createdAt), style = Typography.bodyMedium, fontSize = 12.sp)
                         }
                     }
                     item{
@@ -131,7 +138,7 @@ fun CommunityDetailScreen(
                         }
                     }else{
                         item {
-                        Text(currentPost.content?:"", fontSize = 16.sp, lineHeight = 24.sp, color = Color.Black)
+                        Text(currentPost.content?:"", style = Typography.bodyMedium)
 
                         }
                     }
@@ -147,7 +154,7 @@ fun CommunityDetailScreen(
                                 .padding(vertical = 12.dp)
                         ) {
                             Icon(painterResource(id = R.drawable.ic_community_comment), null, tint = Color.Gray, modifier = Modifier.size(18.dp))
-                            Text(" ${currentPost.commentCount}", color = Color.Black, modifier = Modifier.padding(end = 16.dp))
+                            Text(" ${currentPost.commentCount}", style = Typography.bodyMedium, modifier = Modifier.padding(end = 16.dp))
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -159,7 +166,7 @@ fun CommunityDetailScreen(
                                     modifier = Modifier.size(18.dp),
                                     contentDescription = null
                                 )
-                                Text(" ${currentPost.likeCount}", color = Color.Black)
+                                Text(" ${currentPost.likeCount}", style = Typography.bodyMedium)
                             }
 
                             Spacer(modifier = Modifier.weight(1f))
@@ -223,26 +230,34 @@ fun CommentRow(
     onEditCancel: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val maxLength = 100
+
     Row(verticalAlignment = Alignment.Top) {
         ProfileImage(comment.user.profileImg, 24)
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             // 닉네임 + 작성 시간을 한 줄에 표시
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(comment.user.nickname, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color.Black)
+                Text(comment.user.nickname, fontWeight = FontWeight.Bold, fontSize = 13.sp, style = Typography.bodyMedium)
                 Spacer(Modifier.width(6.dp))
                 Text(
                     text = comment.createdAt?.let { TimeFormatter.formatTimestampTime(it) } ?: "",
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    style = Typography.bodyMedium
                 )
             }
+            Spacer(modifier = Modifier.height(7.dp))
+
 
             if (isEditing) {
                 // 인라인 편집 모드
                 TextField(
                     value = editingText,
-                    onValueChange = onEditTextChange,
+                    onValueChange = { input ->
+                        limitLength(input, maxLength, context, onEditTextChange)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.White,
@@ -252,18 +267,27 @@ fun CommentRow(
                         focusedTextColor = Color.Black,
                         unfocusedTextColor = Color.Black
                     ),
-                    shape = RoundedCornerShape(8.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    textStyle = Typography.bodyMedium
                 )
                 Row {
                     TextButton(onClick = onEditSubmit) {
-                        Text("저장", color = primary, fontSize = 12.sp)
+                        Text("저장", color = primary, fontSize = 12.sp,style = Typography.bodyMedium)
                     }
                     TextButton(onClick = onEditCancel) {
-                        Text("취소", color = Color.Gray, fontSize = 12.sp)
+                        Text("취소", color = Color.Gray, fontSize = 12.sp,style = Typography.bodyMedium)
                     }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        "${editingText.length} / $maxLength",
+                        fontSize = 12.sp,
+                        color = if (editingText.length >= maxLength) Color.Red else Color.Gray,
+                        style = Typography.bodyMedium,
+                        modifier = Modifier.padding(end = 40.dp)
+                    )
                 }
             } else {
-                Text(comment.content, fontSize = 14.sp, color = Color.Black)
+                Text(comment.content, fontSize = 14.sp, style = Typography.bodyMedium)
             }
         }
 
@@ -287,21 +311,27 @@ fun CommentRow(
 
 @Composable
 fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -> Unit, onSend: () -> Unit) {
+    val context = LocalContext.current
+    val maxLength = 100
+    val focus = LocalFocusManager.current
     Card(
         colors = CardDefaults.cardColors(containerColor = textFieldBackground),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.elevatedCardElevation(1.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(nickname, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text(nickname, fontSize = 13.sp, fontWeight = FontWeight.Bold, style = Typography.bodyMedium)
             TextField(
                 value = text,
-                onValueChange = onTextChange,
+                onValueChange = { input ->
+                    limitLength(input, maxLength, context, onTextChange)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(70.dp)
                     .padding(top = 8.dp),
-                placeholder = { Text("댓글을 남겨보세요...", fontSize = 13.sp, color = Color.Gray) },
+                placeholder = { Text("댓글을 남겨보세요...", fontSize = 13.sp, color = Color.Gray, style = Typography.bodyMedium) },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.White,
@@ -312,9 +342,20 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
                 ),
                 shape = RoundedCornerShape(8.dp)
             )
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "${text.length} / $maxLength",
+                    fontSize = 12.sp,
+                    color = if (text.length >= maxLength) Color.Red else Color.Gray,
+                    style = Typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.weight(1f))
                 Button(
-                    onClick = onSend,
+                    onClick = {onSend()
+                              focus.clearFocus()},
                     modifier = Modifier
                         .height(32.dp)
                         .padding(top = 4.dp),
@@ -322,9 +363,17 @@ fun CommentInputSection(nickname: String, text: String, onTextChange: (String) -
                     shape = RoundedCornerShape(4.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                 ) {
-                    Text("등록", fontSize = 12.sp, color = Color.White)
+                    Text("등록", fontSize = 12.sp, color = Color.White,style = Typography.bodyMedium)
                 }
             }
         }
+    }
+}
+
+fun limitLength(input: String, maxLength: Int, context: Context, onValueChange: (String) -> Unit){
+    if (input.length <= maxLength) {
+        onValueChange(input)
+    } else {
+        Toast.makeText(context, "${maxLength}자 이하로 입력해주세요.", Toast.LENGTH_SHORT).show()
     }
 }

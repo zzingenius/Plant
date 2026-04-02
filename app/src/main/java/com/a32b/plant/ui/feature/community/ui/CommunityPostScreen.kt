@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -43,36 +44,24 @@ fun CommunityPostScreen(
     val tag = args?.tag
     val title = args?.title
     val studyLogIds = args?.studyLogIds
-    val tags = listOf(tag?.dropLast(2), tag?.takeLast(2))
     val viewModel: CommunityPostViewModel = viewModel(
         factory = ViewModelFactory.communityPostViewModelFactory(postId, potId, title,studyLogIds)
     )
 
-    Log.d("넘어온 거", tags.toString())
 
     val uiState by viewModel.uiState.collectAsState()
 
-//    val tags = uiState.tags
-    viewModel.onSelectedTagChange(tags.filterNotNull())
-
+    tag?.let {
+        val tags = listOf(tag.dropLast(2), tag.takeLast(2))
+        viewModel.onSelectedTagChange(tags)
+    }
 
     LaunchedEffect(postId,  Unit) {
-        Log.d("스크린","되라")
         postId?.let { viewModel.getPost(postId) }
         if(uiState.selected.contains("공유")){
             viewModel.onIsSharedChange()
         }
-//        potId?.let {
-//
-//            Log.d("tag", tag!!)
-//        }
-//        if (potId.isNullOrEmpty() && tags.contains("공유")){
-//
-//            Log.d("potId", potId.toString())
-//            Log.d("tag", tag!!)
-//
-//            viewModel.onIsSharedChange()
-//        }
+
         viewModel.event.collect { event ->
             when(event){
                 is CommunityPostEvent.NavigateToDetail -> {
@@ -92,7 +81,6 @@ fun CommunityPostScreen(
             PostTopBar(
                 isEditMode = postId != null,
                 onBackClick = {
-                    //⭐백버튼 클릭 시 정말 종료하겠냐는 다이얼로그 띄우기
                     viewModel.onIsDismissDialogShowChange()
                 },
                 onRegisterClick = {
@@ -134,20 +122,20 @@ fun CommunityPostScreen(
                     onValueChange = { viewModel.onTitleChange(it) },
                     placeholder = "제목을 입력하세요",
                     singleLine = true,
-
+                    maxLength = 50
                 )
             }
-            Log.d("tagg", uiState.selected.toString())
 
             item {
                 Text("태그", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                TagGroup(uiState.tags + if(uiState.isShared) listOf("공유") else emptyList(), enable = !uiState.isShared, init = if(uiState.isShared)uiState.selected else emptyList()){ selected ->
+                TagGroup(uiState.tags + if(uiState.isShared) listOf("공유") else emptyList(),
+                    enable = !uiState.isShared,
+                    editing = true,
+                    init = if(uiState.isShared)uiState.selected else emptyList()){ selected ->
                     viewModel.onSelectedTagChange(selected)
 
                 }
-                Log.d("tagg", "아이템 안")
-
             }
 
             if (uiState.isShared){
@@ -163,7 +151,8 @@ fun CommunityPostScreen(
                         value = uiState.content,
                         onValueChange = { viewModel.onContentChange(it) },
                         placeholder = "나누고 싶은 이야기를 적어주세요.\n\n※ 비방이나 욕설은 제재 대상이 될 수 있습니다.",
-                        modifier = Modifier.heightIn(min = 400.dp)
+                        modifier = Modifier.heightIn(min = 400.dp),
+                        maxLength = 1000
                     )
                 }
             }
@@ -215,27 +204,71 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
 }
 
 
+//@Composable
+//fun PostInputField(
+//    value: String?,
+//    onValueChange: (String) -> Unit,
+//    placeholder: String,
+//    modifier: Modifier = Modifier,
+//    singleLine: Boolean = false
+//) {
+//    TextField(
+//        value = value ?: "",
+//        onValueChange = onValueChange,
+//        placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
+//        modifier = modifier.fillMaxWidth(),
+//        singleLine = singleLine,
+//        colors = TextFieldDefaults.colors(
+//            focusedContainerColor = Color.White,
+//            unfocusedContainerColor = Color.White,
+//            focusedIndicatorColor = Color.Transparent,
+//            unfocusedIndicatorColor = Color.Transparent
+//        ),
+//        shape = RoundedCornerShape(8.dp),
+//        textStyle = Typography.bodyMedium
+//    )
+//}
 @Composable
 fun PostInputField(
     value: String?,
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    singleLine: Boolean = false
+    singleLine: Boolean = false,
+    maxLength: Int = Int.MAX_VALUE
 ) {
-    TextField(
-        value = value ?: "",
-        onValueChange = onValueChange,
-        placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
-        modifier = modifier.fillMaxWidth(),
-        singleLine = singleLine,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        shape = RoundedCornerShape(8.dp),
-        textStyle = Typography.bodyMedium
-    )
+    val context = LocalContext.current
+
+    Column {
+        TextField(
+            value = value ?: "",
+            onValueChange = { input ->
+                if (input.length <= maxLength) {
+                    onValueChange(input)
+                } else {
+                    Toast.makeText(context, "${maxLength}자 이하로 입력해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            },
+            placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
+            modifier = modifier.fillMaxWidth(),
+            singleLine = singleLine,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(8.dp),
+            textStyle = Typography.bodyMedium
+        )
+
+        Text(
+            "${value?.length ?: 0} / $maxLength",
+            style = Typography.bodyMedium,
+            color = if ((value?.length ?: 0) >= maxLength) Color.Red else Color.Gray,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = 8.dp, top = 4.dp)
+        )
+    }
 }
