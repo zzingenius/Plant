@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -76,7 +78,7 @@ fun MyCommunityFeedScreen(navController: NavController) {
                     Image(painter = painterResource(R.drawable.ic_backbtn),
                         contentDescription = "뒤로가기")
                 }
-                Text("커뮤니티 활동", style = Typography.titleLarge)
+                Text("내 활동", style = Typography.titleLarge)
             }
 
             TagGroup(list, init = listOf(uiState.selected),isMultiSelected = false){ selected ->
@@ -99,17 +101,17 @@ fun ContentList(lists : List<CommunityActivity>, onClick: (String) -> Unit){
     LazyColumn {
         items(lists) { list->
             Card(
-                modifier = Modifier.fillMaxWidth().padding(10.dp),
+                modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
                 shape = RoundedCornerShape(7.dp),
                 colors = CardDefaults.cardColors(Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                 onClick = {onClick(list.targetId)}
             ) {
                 Column(
-                    modifier = Modifier.padding(top = 13.dp, bottom = 13.dp, start = 7.dp, end = 7.dp)
+                    modifier = Modifier.padding(7.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().height(30.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -122,7 +124,7 @@ fun ContentList(lists : List<CommunityActivity>, onClick: (String) -> Unit){
                         Text(
                             list.comment,
                             style = Typography.bodyMedium,
-                            modifier = Modifier.padding(top = 5.dp)
+                            modifier = Modifier.padding(top = 3.dp)
                         )
                     }
                 }

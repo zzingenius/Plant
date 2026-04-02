@@ -1,21 +1,17 @@
 package com.a32b.plant.ui.feature.community.ui
 
-import android.nfc.Tag
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
@@ -29,19 +25,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.a32b.plant.R
 import com.a32b.plant.core.component.ProfileImage
+import com.a32b.plant.core.component.Tag
 import com.a32b.plant.core.component.TagGroup
+import com.a32b.plant.core.component.TagSheet
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.data.model.Post
+import com.a32b.plant.data.model.Tag
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityListViewModel
 import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.background
 import com.a32b.plant.ui.theme.primary
 import com.a32b.plant.ui.theme.sub1
-import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
-import java.util.*
 
 
 @Composable
@@ -51,6 +47,10 @@ fun CommunityListScreen(navController: NavController) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     val uiState by viewModel.uiState.collectAsState()
+
+    val tagList : List<Tag> = listOf(Tag(name = "국어", parentId = "1"),Tag(name = "영어", parentId = "1"),Tag(name = "기타", parentId = "1"),
+                                Tag(name = "자소서/이력서", parentId = "2"),Tag(name = "면접", parentId = "2"),Tag(name = "포트폴리오", parentId = "2"),Tag(name = "기타", parentId = "2"),
+                                    Tag(name = "중등국어", parentId = "3"),Tag(name = "중등영어", parentId = "3"),Tag(name = "기타", parentId = "3"),)
 
     BackHandler {
         navController.navigate(Routes.HomeMain) {
@@ -66,6 +66,9 @@ fun CommunityListScreen(navController: NavController) {
                     query = searchQuery,
                     onQueryChange = { viewModel.onSearchQueryChanged(it) }
                 )
+                TagSheet(tagList) { selected ->
+                    Log.d("선택된 거 ", selected.toString())
+                }
                 TagGroup(tags = uiState.tags + listOf("공유")){ selected ->
                     viewModel.onSelectedChanged(selected.toList())
 
@@ -146,7 +149,7 @@ fun PostCard(post: Post, isLiked: Boolean,onClick: () -> Unit ) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 10.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
 
                 Text(text = post.title, fontWeight = FontWeight.Bold, style = Typography.bodyMedium,
@@ -155,7 +158,11 @@ fun PostCard(post: Post, isLiked: Boolean,onClick: () -> Unit ) {
                     modifier = Modifier.weight(1f))
                 Text(text = TimeFormatter.formatTimeAgo(post.createdAt), fontSize = 11.sp, style = Typography.bodyMedium)
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Row {
+                post.tag.forEach { Tag(it, 10) }
+            }
+
+            Spacer(modifier = Modifier.height(3.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ProfileImage(level = post.author.profileImg, 16)
                 Text(text = "  ${post.author.nickname}", fontSize = 12.sp, style = Typography.bodyMedium)
