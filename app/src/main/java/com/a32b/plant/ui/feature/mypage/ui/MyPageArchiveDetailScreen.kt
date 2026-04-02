@@ -1,5 +1,6 @@
 package com.a32b.plant.ui.feature.mypage.ui
 
+import android.R.attr.contentDescription
 import android.R.attr.enabled
 import android.R.attr.onClick
 import android.R.attr.tag
@@ -55,7 +56,7 @@ import com.a32b.plant.ui.theme.fontColorSub
 // 총 공부 시간 152: 25: 21
 // 학습 logs
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyPageArchiveDetailScreen(navController: NavController) {
     val args = navController.currentBackStackEntry?.toRoute<Routes.MyPageArchiveDetail>()!!
@@ -116,10 +117,20 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                         viewModel.toggleSelectionMode(true)
                     }
                 }) {
-                    Icon(
-                        imageVector = if (uiState.isSelectionMode) Icons.Default.Check else Icons.Default.Share,
-                        contentDescription = "공유"
-                    )
+                    if (uiState.isSelectionMode) {
+                        Icon(
+                            Icons.Default.Check,
+                            contentDescription = "확인",
+                            modifier = Modifier.size(24.dp),
+                            tint = fontColorSub
+                        )
+                    } else {
+                        Icon(
+                            painterResource(id = R.drawable.ic_share),
+                            contentDescription = "공유",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                 }
             }
         }
@@ -230,11 +241,7 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            AnimatedVisibility(
-                                visible = uiState.isSelectionMode, // isSelectionMode 가 ture 일 때 체크박스 표시
-                                enter = expandHorizontally() + fadeIn(),
-                                exit = shrinkHorizontally() + fadeOut()
-                            ) {
+                            if (uiState.isSelectionMode) {
                                 Checkbox(
                                     checked = uiState.selectedIds.contains(log.id),
                                     onCheckedChange = { viewModel.toggleSelection(log.id) },
@@ -274,7 +281,7 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
             }
         }
     }
-    // 공유 확인 다이얼로그
+// 공유 확인 다이얼로그
     if (showDialog) {
         ConfirmDialog(
             text = "커뮤니티 공유",

@@ -64,8 +64,10 @@ import com.a32b.plant.ui.theme.sub2
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.draw.scale
 import com.a32b.plant.core.component.ConfirmDialog
 import com.a32b.plant.ui.theme.PlantTheme
+import com.a32b.plant.ui.theme.sub_green2
 
 
 @Composable
@@ -155,35 +157,37 @@ fun DarkModeToggleButton(
     isDarkMode: Boolean,
     onToggle: () -> Unit
 ) {
-    Button(
-        onClick = { onToggle() },
-        modifier = Modifier.fillMaxWidth(),
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
         shape = RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(
+        colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 2.dp,
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             // 좌측
             Text(
                 text = "다크모드",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 8.dp)
             )
             // 우측
             Switch(
                 checked = isDarkMode,
+                modifier = Modifier.scale(0.9f),
                 onCheckedChange = { onToggle() },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = MaterialTheme.colorScheme.surface,
-                    checkedTrackColor = MaterialTheme.colorScheme.onSurface
+                    checkedTrackColor = sub_green2
                 ),
             )
         }
@@ -196,23 +200,28 @@ fun GrownTreesButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 2.dp,
         )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
+
         ) {
             Text(
                 text = "기른 나무 수",
                 style = MaterialTheme.typography.bodyLarge
             )
-            // -------- 03-26 users db pots 추가되면 가져오기
             Text(
                 text = "$completedPotCount 그루",
                 style = MaterialTheme.typography.bodyLarge
@@ -225,7 +234,9 @@ fun GrownTreesButton(
 @Composable
 fun ButtonTemplate(text: String, onClick: () -> Unit) {
     Button(
-        onClick = onClick, modifier = Modifier.fillMaxWidth(),
+        onClick = onClick, modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.surface,
