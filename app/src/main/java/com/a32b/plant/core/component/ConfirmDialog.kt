@@ -60,5 +60,4 @@ fun ConfirmDialog(text: String, semiText:String? = null,onDismiss: () -> Unit, o
             }
         }
     }
-
 }

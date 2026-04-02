@@ -22,10 +22,13 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import com.a32b.plant.core.component.ConfirmDialog
 import com.a32b.plant.core.util.TimeFormatter
+import com.a32b.plant.ui.theme.background
 import com.a32b.plant.ui.theme.fontColor
 import com.a32b.plant.ui.theme.fontColorSub
 import java.time.ZoneId
+import androidx.compose.ui.window.Dialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,14 +59,27 @@ fun StudyPlanDetailScreen(
     val selectedStudyLog by viewModel.selectedStudyLog.collectAsState()
 
     //전체 선택 상태
-    val isAllSelected = viewModel.isAllSelected
+    val isAllSelected by remember(logs) {
+        derivedStateOf {
+            logs.isNotEmpty() && logs.all { it.isSelected }
+        }
+    }
 
     //공유 모든 상태
     val isShareMode by viewModel.isShareMode.collectAsState()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     Scaffold(
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(top = 0.dp),
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = background,
+                    titleContentColor = fontColor,
+                    navigationIconContentColor = fontColor,
+                    actionIconContentColor = fontColor
+                ),
                 title = {
                     potInfo?.let {
                         Text("[${it.tag}] ${it.name}",
@@ -82,7 +98,7 @@ fun StudyPlanDetailScreen(
                                         else R.drawable.ic_backbtn
                                 ),
                                 contentDescription = if (isShareMode) "공유 취소" else "뒤로가기",
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(19.dp)
                             )
                         }
                 },
@@ -93,7 +109,7 @@ fun StudyPlanDetailScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_edit),
                                 "수정하기",
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(19.dp)
                             )
                         }
                     }
@@ -105,9 +121,9 @@ fun StudyPlanDetailScreen(
                     } }) {
                         if (isShareMode) {
                             // 아이콘 벡터와 리소스 처리 분기
-                            Icon(Icons.Default.Check, contentDescription = "확인", modifier = Modifier.size(24.dp), tint = fontColorSub)
+                            Icon(Icons.Default.Check, contentDescription = "확인", modifier = Modifier.size(19.dp), tint = fontColorSub)
                         } else {
-                            Icon(painterResource(id = R.drawable.ic_share), contentDescription = "공유", modifier = Modifier.size(24.dp))
+                            Icon(painterResource(id = R.drawable.ic_share), contentDescription = "공유", modifier = Modifier.size(19.dp))
                         }
                     }
                 }
@@ -133,19 +149,22 @@ fun StudyPlanDetailScreen(
             .fillMaxSize()
         ) {
             //전체 선택 체크 박스 + 삭제 버튼
-            if (logs.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if(isShareMode){
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (isShareMode) {
+                    if (logs.isNotEmpty()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { viewModel.toggleAllSelection(!isAllSelected) }
+                        ) {
                             //전체 선택
                             Checkbox(
                                 checked = isAllSelected,
-                             onCheckedChange = { viewModel.toggleAllSelection(it) }
+                                onCheckedChange = { viewModel.toggleAllSelection(it) }
                             )
                             Text("전체 선택", style = MaterialTheme.typography.bodyMedium)
                         }
@@ -155,30 +174,28 @@ fun StudyPlanDetailScreen(
                             style = MaterialTheme.typography.labelMedium,
                             color = fontColorSub
                         )
-
-                    } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                            TextButton(
-                                onClick = { viewModel.setPotDeleteDialogShown(true) },
-                                modifier = Modifier.height(36.dp),
-                                contentPadding = PaddingValues(horizontal = 8.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_trash),
-                                    contentDescription = "화분 전체 삭제",
-                                    modifier = Modifier.size(18.dp),
-                                    tint = fontColorSub
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    "화분 전체 삭제",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = fontColorSub
-                                )
-                        }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                    TextButton(
+                        onClick = { viewModel.setPotDeleteDialogShown(true) },
+                        modifier = Modifier.height(20.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_trash),
+                            contentDescription = "화분 전체 삭제",
+                            modifier = Modifier.size(18.dp),
+                            tint = fontColorSub
+                        )
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(
+                            "화분 전체 삭제",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = fontColorSub
+                        )
                     }
                 }
-                HorizontalDivider(thickness = 0.5.dp, color = fontColorSub)
             }
             // 학습 기록 리스트 영역
             Box(modifier = Modifier.weight(1f)) {
@@ -199,8 +216,8 @@ fun StudyPlanDetailScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = PaddingValues(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(logs) { record ->
                             StudyRecordCard(
@@ -222,120 +239,115 @@ fun StudyPlanDetailScreen(
                 }
                 // 선택 로그 존재 -> 다이얼로그 표출
                 selectedStudyLog?.let { log ->
-                    StudyLogDetailDialog(
-                        log = log,
-                        ondismiss = { viewModel.onDismissLogDialog() }
+                    ConfirmDialog(
+                        text = "상세 공부 기록",
+                        semiText = log.contents.joinToString("\n") { "• $it" } +
+                                "\n\n공부 시간: ${TimeFormatter.formatToDigitalClock(log.studyingTime)}",
+                        onDismiss = { viewModel.onDismissLogDialog() },
+                        onConfirm = { viewModel.onDismissLogDialog() }
                     )
                 }
-
                 // 삭제 확인 다이얼로그
                 if (isDeleteDialogShown) {
-                    AlertDialog(
-                        onDismissRequest = { viewModel.dismissDeleteDialog() },
-                        title = { Text("기록 삭제") },
-                        text = { Text("정말로 이 학습 기록을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.") },
-                        confirmButton = {
-                            TextButton(onClick = { viewModel.confirmDelete() }) {
-                                Text("예", color = Color.Red, fontWeight = FontWeight.Bold)
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { viewModel.dismissDeleteDialog() }) {
-                                Text("아니오", color = Color.Gray)
-                            }
-                        },
-                        shape = RoundedCornerShape(16.dp)
+                    ConfirmDialog(
+                        text = "기록 삭제",
+                        semiText = "정말로 이 학습 기록을 삭제하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.",
+                        onDismiss = { viewModel.dismissDeleteDialog() },
+                        onConfirm = { viewModel.confirmDelete() }
                     )
                 }
-
                 // 제목 변경 다이얼로그
                 if (isEditDialogShown) {
-                    AlertDialog(
-                        onDismissRequest = { viewModel.setEditDialogShown(false) },
-                        title = { Text("제목 변경", style = MaterialTheme.typography.titleMedium) },
-                        text = {
-                            OutlinedTextField(
-                                value = editNameText,
-                                onValueChange = { editNameText = it },
-                                label = { Text("화분 이름") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        },
-                        confirmButton = {
-                            TextButton(
-                                onClick = { viewModel.updatePotName(editNameText) },
-                                enabled = editNameText.isNotBlank() // 빈 칸 저장 방지
+                    Dialog(onDismissRequest = { viewModel.setEditDialogShown(false) }) {
+                        // 공용 다이얼로그와 동일한 모양의 Card 생성
+                        Card(
+                            shape = RoundedCornerShape(30.dp),
+                            colors = CardDefaults.cardColors(Color.White),
+                            elevation = CardDefaults.cardElevation(3.dp)
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(22.dp)
                             ) {
-                                Text("확인", fontWeight = FontWeight.Bold, color = Color(0xFFA5C16C))
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // 제목
+                                Text("제목 변경", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // 입력창 (디자인에 어울리게 스타일링)
+                                OutlinedTextField(
+                                    value = editNameText,
+                                    onValueChange = { editNameText = it },
+                                    placeholder = { Text("화분 이름을 입력하세요", style = MaterialTheme.typography.bodyMedium) },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = Color(0xFFA5C16C), // 강조색 (primary)
+                                        unfocusedBorderColor = Color.LightGray
+                                    )
+                                )
+
+                                Spacer(modifier = Modifier.height(22.dp))
+
+                                // 버튼 영역 (이미지 디자인 그대로 반영)
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Button(
+                                        onClick = { viewModel.setEditDialogShown(false) },
+                                        modifier = Modifier.height(36.dp).weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF1F3EE)) // sub2 색상 느낌
+                                    ) {
+                                        Text("취소", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                                    }
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Button(
+                                        onClick = {
+                                            if (editNameText.isNotBlank()) {
+                                                viewModel.updatePotName(editNameText)
+                                            }
+                                        },
+                                        modifier = Modifier.height(36.dp).weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFA5C16C)) // primary 색상
+                                    ) {
+                                        Text("확인", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                                    }
+                                }
                             }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { viewModel.setEditDialogShown(false) }) {
-                                Text("취소", color = Color.Gray)
-                            }
-                        },
-                        shape = RoundedCornerShape(16.dp)
-                    )
+                        }
+                    }
                 }
                 // 화분 전체 삭제 다이얼로그
                 if (isPotDeleteDialogShown) {
-                    AlertDialog(
-                        onDismissRequest = { viewModel.setPotDeleteDialogShown(false) },
-                        title = { Text("화분 삭제") },
-                        text = { Text(" 이 화분과 화분의 \n \"모든 학습 기록\"이 영구 삭제됩니다. \n 정말 삭제하시겠습니까?") },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    viewModel.confirmDeleteEntirePot {
-                                        navController.popBackStack()
-                                    }
-                                }
-                            ) {
-                                Text("삭제", color = Color.Red, fontWeight = FontWeight.Bold)
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { viewModel.setPotDeleteDialogShown(false) }) {
-                                Text("취소", color = fontColor)
-                            }
-                        },
-                        shape = RoundedCornerShape(16.dp)
+                    ConfirmDialog(
+                        text = "화분 삭제",
+                        semiText = "이 화분과 모든 학습 기록이 영구 삭제됩니다.\n정말 삭제하시겠습니까?",
+                        onDismiss = { viewModel.setPotDeleteDialogShown(false) },
+                        onConfirm = { viewModel.confirmDeleteEntirePot { navController.popBackStack() } }
                     )
                 }
 
                 // 학습 완료 확인 다이얼로그
                 if (isCompleteDialogShown) {
-                    AlertDialog(
-                        onDismissRequest = { viewModel.setCompleteDialogShown(false) },
-                        title = { Text("학습완료") },
-                        text = {
-                            Text(
-                                "이 화분의 학습을 최종 완료 하시겠습니까? \n" +
-                                        "완료 후에는 마이페이지의 \"기른 나무\"에서 확인 가능합니다."
-                            )
-                        },
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    viewModel.completeStudyPlan {
-                                        navController.popBackStack()
-                                    }
-                                }
-                            ) {
-                                Text("완료", fontWeight = FontWeight.Bold, color = fontColor)
+                    ConfirmDialog(
+                        text = "학습 완료",
+                        semiText = "이 화분의 학습을 최종 완료 하시겠습니까?\n완료 후에는 '기른 나무'에서 확인 가능합니다.",
+                        onDismiss = { viewModel.setCompleteDialogShown(false) },
+                        onConfirm = {
+                            viewModel.completeStudyPlan {
+                                val potName = potInfo?.name ?: "화분"
+
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "\"$potName\"화분의 학습을 완료했어요!",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                                navController.popBackStack()
                             }
-                        },
-                        dismissButton = {
-                            TextButton(
-                                onClick = {
-                                    viewModel.setCompleteDialogShown(false)
-                                }
-                            ) {
-                                Text("취소", color = fontColorSub)
-                            }
-                        },
-                        shape = RoundedCornerShape(16.dp)
+                        }
                     )
                 }
             }
@@ -351,20 +363,19 @@ fun StudyRecordCard(
     onSelectionChange: (Boolean) -> Unit,
     onCardClick: () -> Unit,
     onDeleteClick: () -> Unit){
-    // Timestamp -> LocalDateTime 변환
     val dateTime = log.createAt.toDate().toInstant()
         .atZone(ZoneId.systemDefault())
         .toLocalDateTime()
     Card(
         modifier = Modifier.fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 2.dp)
             .clickable{ onCardClick()},
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(3.dp),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if(isShareMode) {
@@ -372,10 +383,10 @@ fun StudyRecordCard(
                     checked = log.isSelected,
                     onCheckedChange = onSelectionChange
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(5.dp))
             }
             //리스트 상세 다이얼로그
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(10.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -383,7 +394,7 @@ fun StudyRecordCard(
                 // 날짜
                 Text(
                     text = if (log.title.isNotEmpty()) log.title else TimeFormatter.formatToKoreanDate(dateTime),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
@@ -392,7 +403,7 @@ fun StudyRecordCard(
                 // 2. 공부시간 (우측 고정)
                 Text(
                     text = "[${TimeFormatter.formatToDigitalClock(log.studyingTime)}]",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -415,18 +426,21 @@ fun StudyRecordCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // 학습 상세 내용 -> 2줄 제한
-            val combinedContent = log.contents
-                .take(2)
-                .joinToString("\n") { "• $it" }
+            val combinedContent = log.contents.take(2).joinToString("\n") { "• $it" }
+                val finalContent = if (log.contents.size > 2) {
+                    "$combinedContent\n..."
+                } else {
+                    combinedContent                }
+
                 if(combinedContent.isNotEmpty()){
                     Text(
-                        text = combinedContent,
+                        text = finalContent,
                         style = MaterialTheme.typography.bodySmall,
                         color = fontColor,
                         modifier = Modifier.fillMaxWidth(),
 
                         // 표시 줄 수
-                        maxLines = 2,
+                        maxLines = 3,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
