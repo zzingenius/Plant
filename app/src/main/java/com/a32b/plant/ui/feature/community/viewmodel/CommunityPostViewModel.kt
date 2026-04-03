@@ -26,7 +26,7 @@ data class CommunityPostUiState(
     val postId: String? = null,
     val title: String = "",
     val content: String? = null,
-    val selected: Tag = Tag(),
+    val selected: Tag = Tag(id = "", name = "태그를 선택하세요"),
     val potId: String? = null,
     val studyLogs: List<StudyLog>? = null,
     val isDismissDialogShow: Boolean = false,

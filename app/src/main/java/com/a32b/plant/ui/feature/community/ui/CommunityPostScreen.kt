@@ -129,7 +129,14 @@ fun CommunityPostScreen(
             }
 
             item {
-                Row {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = !uiState.isShared) {
+                            viewModel.onIsTagSheetShownChange()
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ){
                     Text("태그", style = Typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground,fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
 
                     if (!uiState.isShared) {
@@ -158,9 +165,16 @@ fun CommunityPostScreen(
                     Spacer(modifier = Modifier.height(2.dp))
                     TagSheet(uiState.tags,
                         enable = !uiState.isShared,
-                        init = if(uiState.isShared || (postId != null && postId.isNotEmpty())) listOf(uiState.selected) else emptyList()) { selected->
-                        Log.d("선택된 거 ", selected.toList().toString())
-                        viewModel.onSelectedTagChange(selected[0])
+                        init = when {
+                            uiState.isShared || !postId.isNullOrEmpty() -> listOf(uiState.selected)
+                            uiState.selected.id.isNotEmpty() -> listOf(uiState.selected)
+                            else -> emptyList()
+                        }
+                    ) { selected ->
+                        if (selected.isNotEmpty()) {
+                            Log.d("선택된 거 ", selected[0].name)
+                            viewModel.onSelectedTagChange(selected[0])
+                        }
                     }
                 }
 
