@@ -152,7 +152,7 @@ fun HomeScreen(navController: NavController) {
                         contentDescription = "화분 추가",
                         modifier = Modifier.fillMaxSize(),
                         tint = MaterialTheme.colorScheme.primary
-                        tint = background
+//                        tint = background
                     )
                 }
                 Spacer(modifier = Modifier.height(50.dp))
@@ -275,8 +275,8 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
                     containerColor = MaterialTheme.colorScheme.primary,
                     disabledContainerColor = MaterialTheme.colorScheme.outlineVariant,
                     disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-                colors = ButtonDefaults.buttonColors(containerColor = primary,
-                    disabledContainerColor = Color.LightGray),
+//                colors = ButtonDefaults.buttonColors(containerColor = primary,
+//                    disabledContainerColor = Color.LightGray),
                 shape = RoundedCornerShape(12.dp),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 6.dp,
