@@ -205,18 +205,16 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
                     .padding(end = 12.dp)
                     .clickable { onRegisterClick() },
                 shape = RoundedCornerShape(4.dp),
-//                color = Color(0xFFC5E1A5)
                 color = MaterialTheme.colorScheme.primaryContainer
-                color = primary
+//                color = primary
             ) {
                 Text(
                     text = if (isEditMode) "수정" else "등록",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-//                    color = Color(0xFF33691E)
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                    color = background,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+//                    color = background,
                     style = Typography.bodyMedium
                 )
             }
@@ -245,12 +243,12 @@ fun PostInputField(
                     Toast.makeText(context, "${maxLength}자 이하로 입력해주세요.", Toast.LENGTH_SHORT).show()
                 }
             },
-            placeholder = { Text(placeholder,
-//                color = Color.LightGray,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = Typography.bodyMedium) },
-            modifier = modifier.fillMaxWidth(),
-            placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
+//            placeholder = { Text(placeholder,
+////                color = Color.LightGray,
+//                color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                style = Typography.bodyMedium) },
+//            modifier = modifier.fillMaxWidth(),
+            placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant, style = Typography.bodyMedium) },
             modifier = modifier.fillMaxWidth()
                 .shadow(elevation = 1.dp, shape = RoundedCornerShape(8.dp))
                 .background(background),
