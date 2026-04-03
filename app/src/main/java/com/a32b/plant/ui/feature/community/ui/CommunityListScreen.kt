@@ -25,14 +25,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.a32b.plant.R
 import com.a32b.plant.core.component.ProfileImage
-import com.a32b.plant.core.component.Tag
-import com.a32b.plant.core.component.TagGroup
+import com.a32b.plant.core.component.TagChip
 import com.a32b.plant.core.component.TagSheet
 import com.a32b.plant.core.navigation.Routes
 import com.a32b.plant.core.util.TimeFormatter
 import com.a32b.plant.data.di.ViewModelFactory
 import com.a32b.plant.data.model.Post
-import com.a32b.plant.data.model.Tag
 import com.a32b.plant.ui.feature.community.viewmodel.CommunityListViewModel
 import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.background
@@ -175,7 +173,8 @@ fun PostCard(post: Post, isLiked: Boolean,onClick: () -> Unit ) {
                 Text(text = TimeFormatter.formatTimeAgo(post.createdAt), fontSize = 11.sp, style = Typography.bodyMedium)
             }
             Row {
-                post.tag.forEach { Tag(it, 10) }
+                if (post.isShared?:false) TagChip("공유", 10)
+                TagChip(post.tag.name, 10)
             }
 
             Spacer(modifier = Modifier.height(3.dp))
