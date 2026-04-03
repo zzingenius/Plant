@@ -55,18 +55,26 @@ class CommunityPostViewModel(
 
     init {
         fetchTags()
-        matchSelectedTag()
         onIsSharedChange()
     }
     fun onIsTagSheetShownChange() = _uiState.update { it.copy(isTagSheetShown = !_uiState.value.isTagSheetShown) }
     private fun fetchTags(){
         viewModelScope.launch(Dispatchers.IO) {
-            getTags(repository.getTag())
+            val fetchedTags = repository.getTag()
+            _uiState.update { it.copy(tags = fetchedTags) }
+            matchSelectedTag()
+
         }
     }
     fun matchSelectedTag(){
-        tagId?.let {
-            onSelectedTagChange(_uiState.value.tags.find { it.id == tagId }!!)
+        val idToMatch = tagId ?: return // tagId가 없으면 중단
+
+        //!! 제거: find 결과를 안전하게 처리
+        val foundTag = _uiState.value.tags.find { it.id == idToMatch }
+        foundTag?.let {
+            onSelectedTagChange(it)
+        } ?: run {
+            Log.e("CommunityPostVM", "전달된 tagId($idToMatch)를 tags 리스트에서 찾을 수 없습니다.")
         }
     }
     // ✅ 기존 글을 불러오는 함수
@@ -106,7 +114,7 @@ class CommunityPostViewModel(
         potId?.let {
             _uiState.update { it.copy(isShared = true) }
             getStudyLog()
-            onTitleChange(title!!)
+            title?.let { onTitleChange(it) }
         }
     }
 
