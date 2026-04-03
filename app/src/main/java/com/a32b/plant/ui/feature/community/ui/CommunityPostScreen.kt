@@ -77,7 +77,7 @@ fun CommunityPostScreen(
     BackHandler { viewModel.onIsDismissDialogShowChange() }
 
     Scaffold(
-        containerColor = background,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             PostTopBar(
                 isEditMode = postId != null,
@@ -116,7 +116,8 @@ fun CommunityPostScreen(
             item { Spacer(modifier = Modifier.height(10.dp)) }
 
             item {
-                Text("제목", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
+                Text("제목", style = Typography.bodyMedium, fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.height(8.dp))
                 PostInputField(
                     value = uiState.title,
@@ -128,6 +129,8 @@ fun CommunityPostScreen(
             }
 
             item {
+                Text("태그", style = Typography.bodyMedium, fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground)
                 Row {
                     Text("태그", style = Typography.bodyMedium, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp))
                     Icon(painter = painterResource(id = if(uiState.isTagSheetShown) R.drawable.ic_up else R.drawable.ic_down),
@@ -158,7 +161,8 @@ fun CommunityPostScreen(
                 }
             }else{
                 item {
-                    Text("본문", style = Typography.bodyMedium, fontWeight = FontWeight.Bold)
+                    Text("본문", style = Typography.bodyMedium, fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground)
                     Spacer(modifier = Modifier.height(8.dp))
                     PostInputField(
                         value = uiState.content,
@@ -188,7 +192,8 @@ fun CommunityPostScreen(
 @Composable
 fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: () -> Unit) {
     CenterAlignedTopAppBar(
-        title = { Text(if (isEditMode) "글 수정" else "글쓰기", style = Typography.titleLarge) },
+        title = { Text(if (isEditMode) "글 수정" else "글쓰기", style = Typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface) },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(Icons.Default.ArrowBack, contentDescription = null, tint = Color.DarkGray)
@@ -200,12 +205,17 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
                     .padding(end = 12.dp)
                     .clickable { onRegisterClick() },
                 shape = RoundedCornerShape(4.dp),
+//                color = Color(0xFFC5E1A5)
+                color = MaterialTheme.colorScheme.primaryContainer
                 color = primary
             ) {
                 Text(
                     text = if (isEditMode) "수정" else "등록",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+//                    color = Color(0xFF33691E)
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                     color = background,
                     style = Typography.bodyMedium
                 )
@@ -235,25 +245,37 @@ fun PostInputField(
                     Toast.makeText(context, "${maxLength}자 이하로 입력해주세요.", Toast.LENGTH_SHORT).show()
                 }
             },
+            placeholder = { Text(placeholder,
+//                color = Color.LightGray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = Typography.bodyMedium) },
+            modifier = modifier.fillMaxWidth(),
             placeholder = { Text(placeholder, color = Color.LightGray, style = Typography.bodyMedium) },
             modifier = modifier.fillMaxWidth()
                 .shadow(elevation = 1.dp, shape = RoundedCornerShape(8.dp))
                 .background(background),
             singleLine = singleLine,
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
+//                focusedContainerColor = Color.White,
+//                unfocusedContainerColor = Color.White,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+//                focusedIndicatorColor = Color.Transparent,
+//                unfocusedIndicatorColor = Color.Transparent
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             ),
             shape = RoundedCornerShape(8.dp),
-            textStyle = Typography.bodyMedium
+//            textStyle = Typography.bodyMedium
+            textStyle = Typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
         )
 
         Text(
             "${value?.length ?: 0} / $maxLength",
             style = Typography.bodyMedium,
-            color = if ((value?.length ?: 0) >= maxLength) Color.Red else Color.Gray,
+            color = if ((value?.length ?: 0) >= maxLength)
+//                Color.Red else Color.Gray,
+                MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(end = 8.dp, top = 4.dp)

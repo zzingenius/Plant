@@ -82,7 +82,7 @@ fun HomeScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(background),
+                .background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(bottom = 50.dp)
         ) {
@@ -151,6 +151,7 @@ fun HomeScreen(navController: NavController) {
                         imageVector = Icons.Default.Add,
                         contentDescription = "화분 추가",
                         modifier = Modifier.fillMaxSize(),
+                        tint = MaterialTheme.colorScheme.primary
                         tint = background
                     )
                 }
@@ -182,7 +183,8 @@ fun HomeTopBar(userName: String){
     Text(
         text = "${userName}의 Garden",
         modifier = Modifier.padding(16.dp),
-        style = MaterialTheme.typography.displayLarge
+        style = MaterialTheme.typography.displayLarge,
+        color = MaterialTheme.colorScheme.primary
     )
 }
 
@@ -192,7 +194,9 @@ fun HomeHeaderSection(date: String, displayPot: PotInfo, onStartClick: () -> Uni
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.padding(vertical = 20.dp)
     ) {
-        Text(date, style = MaterialTheme.typography.titleSmall)
+        Text(date,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurface)
         Spacer(modifier = Modifier.height(20.dp))
         MainPlantCard(displayPot = displayPot, onStartClick = onStartClick)
         Spacer(modifier = Modifier.height(40.dp))
@@ -213,7 +217,7 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(0.85f),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
@@ -223,12 +227,13 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
             // 화분이 있을 때만 태그 표시 (ID가 비어있지 않을 때)
             if (!isPotEmpty && !displayPot.tag.isNullOrEmpty()) {
                 Surface(
-                    color = Color(0xFFE8F5E9),
+                    color = MaterialTheme.colorScheme.primary,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = displayPot.tag,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -239,7 +244,7 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
             Text(
                 text = if (isPotEmpty) "화분을 등록해보세요" else (displayPot.name ?: "이름 없음"),
                 style = MaterialTheme.typography.displayLarge,
-                color = fontColor
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -255,7 +260,8 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
             // [공부 시간] 화분이 없으면 00:00:00
             Text(
                 text = TimeFormatter.formatToDigitalClock(displayPot.potTotalStudyingTime?:0L),
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -265,6 +271,10 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
                 // 화분이 있을 때 버튼을 활성화함
                 enabled = !isPotEmpty,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.outlineVariant,
+                    disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant),
                 colors = ButtonDefaults.buttonColors(containerColor = primary,
                     disabledContainerColor = Color.LightGray),
                 shape = RoundedCornerShape(12.dp),
@@ -277,7 +287,7 @@ fun MainPlantCard(displayPot: PotInfo, onStartClick: () -> Unit) {
                 Text(
                     text = if (isPotEmpty) "화분을 등록해주세요" else "공부 시작",
                     style = MaterialTheme.typography.titleSmall,
-                    color = background
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -295,7 +305,7 @@ fun GridPlantItem(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .background(Color.White, RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -324,12 +334,13 @@ fun GridPlantItem(
                 Text(
                     text = TimeFormatter.formatToDigitalClock(pot.potTotalStudyingTime ?: 0L),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 // 화분 이름 (Medium 적용)
                 Text(
                     text = pot.name ?: "이름 없음",
                     style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -355,7 +366,7 @@ fun InterruptedDialog(onDismiss: () -> Unit, onConfirm: (List<String>) -> Unit, 
     }
     Dialog(onDismissRequest = {}) {
         Card(shape = RoundedCornerShape(30.dp),
-            colors = CardDefaults.cardColors(background)) {
+            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)) {
             Column(modifier = Modifier.padding(22.dp)
                     .consumeWindowInsets(WindowInsets.ime)
                     .imePadding()) {
@@ -363,14 +374,21 @@ fun InterruptedDialog(onDismiss: () -> Unit, onConfirm: (List<String>) -> Unit, 
                     modifier = Modifier.weight(1f, fill = false),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     item {
-                        Text("이전 학습 기록이 저장되지 않았습니다!", style = Typography.titleSmall)
+                        Text("이전 학습 기록이 저장되지 않았습니다!",
+                            style = Typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text("저장하시겠습니까?", style = Typography.bodyMedium)
+                        Text("저장하시겠습니까?",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Text("[${studySession.tag}] ${studySession.title}", style = Typography.bodyMedium)
-                        Text(TimeFormatter.formatToDigitalClock(studySession.time!!), style = Typography.bodyMedium)
-
+                        Text("[${studySession.tag}] ${studySession.title}",
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface)
+                        Text(TimeFormatter.formatToDigitalClock(studySession.time!!),
+                            style = Typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(10.dp))
                     }
 
@@ -381,7 +399,7 @@ fun InterruptedDialog(onDismiss: () -> Unit, onConfirm: (List<String>) -> Unit, 
                             onValueChange = { inputs[index] = it },
                             modifier = Modifier.fillMaxWidth()
                                 .focusRequester(focus[index]),
-                            placeholder = {Text("학습을 기록해보세요!", style = Typography.bodyMedium, color = Color(0xFF858585))},
+                            placeholder = {Text("학습을 기록해보세요!", style = Typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)},
                             textStyle = Typography.bodyMedium,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             keyboardActions = KeyboardActions(
@@ -410,14 +428,18 @@ fun InterruptedDialog(onDismiss: () -> Unit, onConfirm: (List<String>) -> Unit, 
                     Button(onClick = onDismiss,
                         modifier = Modifier.height(30.dp).weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(sub2)) {
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurface)) {
                         Text("취소", style = Typography.bodyMedium)
                     }
                     Spacer(modifier = Modifier.width(10.dp))
                     Button(onClick = {onConfirm(inputs.toList())},
                         modifier = Modifier.height(30.dp).weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(primary)) {
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary)) {
                         Text("저장", style = Typography.bodyMedium)
                     }
                 }

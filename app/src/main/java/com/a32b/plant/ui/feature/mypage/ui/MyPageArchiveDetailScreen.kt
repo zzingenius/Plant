@@ -2,6 +2,7 @@ package com.a32b.plant.ui.feature.mypage.ui
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.padding
@@ -70,7 +71,8 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                 title = {
                     Text(
                         "[${pot?.tag ?: "태그"}] ${pot?.name ?: "제목"}",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
@@ -87,11 +89,41 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                                 id = if (uiState.isSelectionMode) R.drawable.ic_study_result_close else R.drawable.ic_backbtn
                             ),
                             contentDescription = if (uiState.isSelectionMode) "취소" else "뒤로가기",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 actions = {
+                    IconButton(onClick = {
+                        if (uiState.isSelectionMode) {
+                            if (uiState.selectedIds.isNotEmpty()) {
+                                showDialog = true
+                            } else {
+                                Toast.makeText(context, "공유할 기록을 선택해 주세요.", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        } else {
+                            viewModel.toggleSelectionMode(true)
+                        }
+                    }) {
+
+                        if (uiState.isSelectionMode) {
+                            Icon(
+                                Icons.Default.Check,
+                                contentDescription = "확인",
+                                modifier = Modifier.size(24.dp),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        } else {
+                            Icon(
+                                painterResource(id = R.drawable.ic_share),
+                                contentDescription = "공유",
+                                modifier = Modifier.size(24.dp),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                     //공유
 //                    IconButton(onClick = {
 //                        if (uiState.isSelectionMode) {
@@ -142,15 +174,20 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                     Column {
                         val sdf = remember { SimpleDateFormat("yyyy-MM-dd", Locale.KOREA) }
                         Text(
-                            text = "시작일 : ${pot.createdAt?.let { formatTimestamp(it) } ?: ""}"
+                            text = "시작일 : ${pot.createdAt?.let { formatTimestamp(it) } ?: ""}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "종료일 : ${pot.completedAt?.let { formatTimestamp(it) } ?: ""}"
+                            text = "종료일 : ${pot.completedAt?.let { formatTimestamp(it) } ?: ""}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "총 공부 시간 : ${uiState.totalStudyTime}",
                             style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -173,14 +210,17 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                                     viewModel.clickAllCheckbox()
                                 }
                             )
-                            Text("전체 선택", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                "전체 선택", style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                         Spacer(modifier = Modifier.weight(1f))
 
                         Text(
                             text = "${uiState.selectedIds.size}개 선택됨",
                             style = MaterialTheme.typography.labelMedium,
-                            color = fontColorSub
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -194,14 +234,15 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                         Text(
                             text = "학습 기록이 없습니다.",
                             style = MaterialTheme.typography.bodyLarge,
-                            color = fontColor
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 } else {
                     //학습 기록 리스트
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -220,7 +261,7 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                                         enabled = isSelectionMode,
                                         onClick = { viewModel.toggleSelection(log.id) }
                                     ),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(2.dp)
                             ) {
@@ -238,7 +279,8 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                                     Column(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(16.dp)) {
+                                            .padding(16.dp)
+                                    ) {
                                         // --- 1층 : 제목, 시간---
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
@@ -252,34 +294,35 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                                 style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                             // 2. 공부시간 (우측 고정)
                                             // 1층의 오른쪽 끝: 공부 시간 (A02)
                                             Text(
                                                 text = "[${TimeFormatter.formatToDigitalClock(log.studyingTime)}]",
                                                 style = MaterialTheme.typography.bodyMedium,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
                                             )
                                         }
-                                            Spacer(modifier = Modifier.height(12.dp))
+                                        Spacer(modifier = Modifier.height(12.dp))
 
-                                            // 학습 상세 내용 -> 2줄 제한
-                                            val combinedContent = log.contents
-                                                .take(2)
-                                                .joinToString("\n") { "• $it" }
-                                            if (combinedContent.isNotEmpty()) {
-                                                Text(
-                                                    text = combinedContent,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = fontColor,
-                                                    modifier = Modifier.fillMaxWidth(),
+                                        // 학습 상세 내용 -> 2줄 제한
+                                        val combinedContent = log.contents
+                                            .take(2)
+                                            .joinToString("\n") { "• $it" }
+                                        if (combinedContent.isNotEmpty()) {
+                                            Text(
+                                                text = combinedContent,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.fillMaxWidth(),
 
-                                                    // 표시 줄 수
-                                                    maxLines = 2,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
+                                                // 표시 줄 수
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
                                         }
                                     }
                                 }
@@ -288,6 +331,7 @@ fun MyPageArchiveDetailScreen(navController: NavController) {
                     }
                 }
             }
+        }
     }
 // 공유 확인 다이얼로그
     if (showDialog) {
