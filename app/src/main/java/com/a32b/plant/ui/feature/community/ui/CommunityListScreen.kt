@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
@@ -61,17 +62,18 @@ fun CommunityListScreen(navController: NavController) {
                 Column(
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.background)
-                        .padding(10.dp)
+                        .padding(horizontal = 10.dp)
                 ) {
                     SearchBarSection(
                         query = searchQuery,
                         onQueryChange = { viewModel.onSearchQueryChanged(it) }
                     )
-                    Row() {
+                    Row(modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             "태그",
                             style = Typography.titleSmall,
-                            modifier = Modifier.padding(start = 16.dp, top = 4.dp),
+                            modifier = Modifier.padding(start = 16.dp),
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Icon(
@@ -80,12 +82,25 @@ fun CommunityListScreen(navController: NavController) {
                             modifier = Modifier.clickable {
                                 viewModel.onIsTagSheetShownChange()
                             })
+                        Box(modifier = Modifier.clickable{
+                            viewModel.onSelectedChanged(emptyList())
+                        }){
+                            TagChip("전체 선택 해제", 13, false)
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Text("공유글 보기", style = Typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 15.sp)
+                        Switch(uiState.isSharedShown, onCheckedChange = {viewModel.onSharedShownChange()},
+                            modifier = Modifier.scale(0.7f).padding(end = 10.dp))
                     }
                     // FlowRow를 사용하여 6개마다 줄바꿈 구현
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(bottom = 8.dp, start = 16.dp, end = 16.dp),
                         // itemCount 파라미터는 더 이상 필요 없습니다.
                         maxItemsInEachRow = 6,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -118,11 +133,6 @@ fun CommunityListScreen(navController: NavController) {
                             Log.d("선택된 거 ", selected.toList().toString())
                         }
                     }
-
-//                TagGroup(tags = uiState.tags + listOf("공유")){ selected ->
-//                    viewModel.onSelectedChanged(selected.toList())
-//
-//                }
 
                 }
             },

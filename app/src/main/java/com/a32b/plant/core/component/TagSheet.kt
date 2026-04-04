@@ -37,7 +37,7 @@ fun TagSheet(tags: List<Tag>, init : List<Tag> = emptyList(),
 
     val groupedTags = tags.groupBy { it.parentId }
 
-    Card(modifier = Modifier.padding(10.dp).fillMaxWidth(),
+    Card(modifier = Modifier.padding(horizontal = 10.dp).fillMaxWidth(),
         shape = RoundedCornerShape(5.dp),
         elevation = CardDefaults.cardElevation(1.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
