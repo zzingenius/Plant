@@ -2,6 +2,7 @@ package com.a32b.plant.data.model
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.PropertyName
 
 data class PostAuthor(
     val id: String = "",
@@ -31,7 +32,10 @@ data class Post(
     val activityId: String = "",
     val isLiked: Boolean = false, // likes 서브컬렉션에서 조회 후 설정
     val studyLogs: List<StudyLog>? = null,
-    val isShared: Boolean? = false,
+
+    @get:PropertyName("isShared")
+    @set:PropertyName("isShared")
+    var isShared: Boolean? = false,
 
     @get:Exclude
     val comments: List<Comment> = emptyList()   // comments 서브컬렉션에서 조회 후 설정

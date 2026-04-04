@@ -150,7 +150,7 @@ fun CommunityPostScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = uiState.selected.name,
+                        text = "${uiState.selected.name}${(if (uiState.isShared) ", 공유" else "")}",
                         style = Typography.bodyMedium,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(top = 4.dp),
@@ -161,7 +161,6 @@ fun CommunityPostScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 if (uiState.isTagSheetShown){
-                    if(uiState.isShared) TagChip("공유", 20)
                     Spacer(modifier = Modifier.height(2.dp))
                     TagSheet(uiState.tags,
                         enable = !uiState.isShared,
