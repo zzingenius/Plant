@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,10 +14,10 @@ import com.a32b.plant.ui.theme.Typography
 import com.a32b.plant.ui.theme.primary
 
 @Composable
-fun TagChip(text: String, size: Int) {
+fun TagChip(text: String, size: Int, isSelected: Boolean = true) {
     Card(
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = primary),
+        colors = CardDefaults.cardColors(containerColor = if (isSelected) primary else MaterialTheme.colorScheme.secondaryContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
         modifier = Modifier.padding(5.dp),
     ) {

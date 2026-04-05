@@ -121,7 +121,7 @@ class MyPageArchiveDetailViewModel(
 
         viewModelScope.launch {
             val potId = pot.id ?: "temp_id"
-            val tag = pot.tag_name ?: "기본"
+            val tag = pot.tag_id ?: "기본"
             val title = pot.name ?: "제목 없음"
 
             val studyLogIds = selectedLogs.map { it.id }
