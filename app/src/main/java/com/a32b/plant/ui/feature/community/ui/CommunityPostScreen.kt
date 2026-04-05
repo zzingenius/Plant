@@ -150,7 +150,7 @@ fun CommunityPostScreen(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = uiState.selected.name,
+                        text = "${uiState.selected.name}${(if (uiState.isShared) ", 공유" else "")}",
                         style = Typography.bodyMedium,
                         fontSize = 13.sp,
                         modifier = Modifier.padding(top = 4.dp),
@@ -161,7 +161,6 @@ fun CommunityPostScreen(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 if (uiState.isTagSheetShown){
-                    if(uiState.isShared) TagChip("공유", 20)
                     Spacer(modifier = Modifier.height(2.dp))
                     TagSheet(uiState.tags,
                         enable = !uiState.isShared,
@@ -231,16 +230,14 @@ fun PostTopBar(isEditMode: Boolean, onBackClick: () -> Unit, onRegisterClick: ()
                     .padding(end = 12.dp)
                     .clickable { onRegisterClick() },
                 shape = RoundedCornerShape(4.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
-//                color = primary
+                color = MaterialTheme.colorScheme.primary
             ) {
                 Text(
                     text = if (isEditMode) "수정" else "등록",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-//                    color = background,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     style = Typography.bodyMedium
                 )
             }
@@ -269,28 +266,19 @@ fun PostInputField(
                     Toast.makeText(context, "${maxLength}자 이하로 입력해주세요.", Toast.LENGTH_SHORT).show()
                 }
             },
-//            placeholder = { Text(placeholder,
-////                color = Color.LightGray,
-//                color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                style = Typography.bodyMedium) },
-//            modifier = modifier.fillMaxWidth(),
+
             placeholder = { Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant, style = Typography.bodyMedium) },
             modifier = modifier.fillMaxWidth()
                 .shadow(elevation = 1.dp, shape = RoundedCornerShape(8.dp))
                 .background(background),
             singleLine = singleLine,
             colors = TextFieldDefaults.colors(
-//                focusedContainerColor = Color.White,
-//                unfocusedContainerColor = Color.White,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-//                focusedIndicatorColor = Color.Transparent,
-//                unfocusedIndicatorColor = Color.Transparent
+                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                 focusedTextColor = MaterialTheme.colorScheme.onSurface,
                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             ),
             shape = RoundedCornerShape(8.dp),
-//            textStyle = Typography.bodyMedium
             textStyle = Typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface)
         )
 
@@ -298,7 +286,6 @@ fun PostInputField(
             "${value?.length ?: 0} / $maxLength",
             style = Typography.bodyMedium,
             color = if ((value?.length ?: 0) >= maxLength)
-//                Color.Red else Color.Gray,
                 MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .align(Alignment.End)

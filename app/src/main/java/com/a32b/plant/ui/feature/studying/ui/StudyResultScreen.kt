@@ -67,7 +67,8 @@ fun StudyResultScreen(navController: NavController) {
         StudyResultContent(timestamp, tag, title, log, level, time)
     }
     Surface(modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background) {
+        color = MaterialTheme.colorScheme.background
+    ) {
         Column(modifier = Modifier.fillMaxSize().padding(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally) {
             Row(modifier = Modifier.fillMaxWidth(),

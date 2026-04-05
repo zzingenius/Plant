@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 data class CommunityListUiState(
     val tags: List<Tag> = emptyList(),
     val selected: List<Tag> = emptyList(),
-    val isTagSheetShown: Boolean = false
+    val isTagSheetShown: Boolean = false,
+    val isSharedShown: Boolean = false
 )
 class CommunityListViewModel(private val repository: PostRepository) : BaseViewModel() {
 
@@ -34,15 +35,7 @@ class CommunityListViewModel(private val repository: PostRepository) : BaseViewM
     }
     fun onIsTagSheetShownChange() = _uiState.update { it.copy(isTagSheetShown = !_uiState.value.isTagSheetShown) }
 
-
-//    private fun fetchTags(){
-//        viewModelScope.launch {
-//            potRepository.getAvailableTags().collectLatest { tags ->
-//                getTags(tags)
-//            }
-//        }
-//    }
-
+    fun onSharedShownChange() = _uiState.update { it.copy(isSharedShown = !_uiState.value.isSharedShown) }
     private fun fetchTags(){
         viewModelScope.launch(Dispatchers.IO) {
             getTags(repository.getTag())
@@ -70,8 +63,11 @@ class CommunityListViewModel(private val repository: PostRepository) : BaseViewM
             //필터 검색 - 하나라도 들어있을 시
             val matchesTags = if (uiState.selected.isEmpty()) true
                               else uiState.selected.any{it.name == post.tag.name}
+
+            val matchesShared = if(!uiState.isSharedShown) true
+                                else post.isShared == true
             
-            matchesQuery && matchesTags
+            matchesQuery && matchesTags && matchesShared
         }
     }.stateIn(
         scope = viewModelScope,
