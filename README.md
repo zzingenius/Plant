@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/26500688/README.md)
 # 플랜트 (Plant)
 
 ## 🌱 프로젝트 소개
