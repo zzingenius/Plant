@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 android {
@@ -13,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.a32b.plant"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -67,10 +69,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
-//구글 로그인 최신 버전 후순위 개발로 미뤄둘 것
-//    implementation("androidx.credentials:credentials:1.3.0")
-//    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-//    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    //구글 로그인 최신 버전 후순위 개발로 미뤄둘 것 -> '주석 해제'
+    implementation("androidx.credentials:credentials:1.3.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     ///파이어스토어
     implementation("com.google.firebase:firebase-firestore")
     //realtime-database
@@ -78,4 +80,18 @@ dependencies {
     //fcm
     implementation("com.google.firebase:firebase-messaging")
 
+    implementation(libs.compose.nav)
+    implementation(libs.coroutine.core)
+    implementation(libs.coroutine.android)
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.serialization)
+
+    implementation(libs.splashscreen)
+
+    implementation("androidx.compose.material:material-icons-extended")
+
+    //coil, AsyniImage
+    implementation("io.coil-kt:coil-compose:2.4.0")
+
+    implementation(libs.datastore.preference)
 }

@@ -1,47 +1,72 @@
 package com.a32b.plant
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.a32b.plant.core.component.BottomBar
+import com.a32b.plant.core.navigation.PlantAppNavigation
+import com.a32b.plant.core.navigation.Routes
+import com.a32b.plant.ui.feature.splash.SplashViewModel
 import com.a32b.plant.ui.theme.PlantTheme
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: SplashViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        Log.d("plantLog", "-----MainActivity")
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition {
+            //해당 값이 트루일 동안 스플래시 유지
+            viewModel.destination.value == null
+        }
+
+        super.onCreate(savedInstanceState)
+
         setContent {
-            PlantTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            // 다크모드 관리용
+            // 원하는 페이지에 MaterialTheme.colorScheme.색상 입력한 뒤 화면 이동 -> 마이페이지 다크모드 ON OFF -> 화면 재확인 확인 가능
+            val isDarkMode by viewModel.isDarkMode.collectAsState()
+            PlantTheme(darkTheme = isDarkMode) { // isDarkMode / 비활성화 = false
+                Surface(modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val navController = rememberNavController()
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+                    val showBottomBar = navBackStackEntry?.destination?.let { destination ->
+                        destination.hasRoute<Routes.HomeMain>() ||
+                                destination.hasRoute<Routes.CommunityList>() ||
+                                destination.hasRoute<Routes.Mypage>()
+                    } ?: false
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        bottomBar = {
+                            if (showBottomBar) BottomBar(navController = navController)
+                        }
+                    ) { innerPadding ->
+                        Box(modifier = Modifier.padding(innerPadding)) {
+                            PlantAppNavigation(navController = navController, viewModel = viewModel)
+                        }
+                    }
                 }
+
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PlantTheme {
-        Greeting("Android")
     }
 }

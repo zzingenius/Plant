@@ -9,6 +9,19 @@ lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.4"
 composeBom = "2024.09.00"
 
+navigation = "2.8.9"
+
+coroutine = "1.9.0"
+lifecycle = "2.10.0"
+
+serialization = "1.7.3"
+
+splash = "1.0.0"
+foundation = "1.10.5"
+material3 = "1.4.0"
+
+datastore = "1.2.1"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -25,6 +38,22 @@ androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 
+#화면전환
+compose-nav = {module = "androidx.navigation:navigation-compose", version.ref = "navigation"}
+serialization = {module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization"}
+
+#코루틴
+coroutine-core = {module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutine"}
+coroutine-android = {module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutine"}
+lifecycle-viewmodel = {module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle"}
+
+#시스템 스플래시 제어
+splashscreen = {module = "androidx.core:core-splashscreen", version.ref = "splash"}
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+
+#preference data store
+datastore-preference = {module = "androidx.datastore:datastore-preferences", version.ref = "datastore"}
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
