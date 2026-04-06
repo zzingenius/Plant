@@ -27,7 +27,7 @@ fun StudyLogCard(studyLogs: List<StudyLog>) {
                 modifier = Modifier.padding(start= 10.dp, end = 10.dp, top = 3.dp, bottom = 3.dp).fillMaxWidth(),
                 elevation = CardDefaults.elevatedCardElevation(2.dp),
 //                colors = CardDefaults.cardColors(Color.White)) {
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
                 Text("${log.title} [${TimeFormatter.formatToDigitalClock(log.studyingTime)}]", style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(10.dp),
                     fontSize = 15.sp,
